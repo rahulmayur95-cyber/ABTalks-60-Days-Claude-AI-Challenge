@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rahul Mayur — Job Search & Personal Branding Toolkit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --ink:     #0f0e0c;
+    --paper:   #fdfcf9;
+    --warm:    #f5f0e8;
+    --accent:  #b8470a;
+    --accent2: #1a3a5c;
+    --gold:    #c9860a;
+    --muted:   #6b6560;
+    --rule:    #e4dfd8;
+    --pill-bg: rgba(184,71,10,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Cover / Masthead ──────────────────── */
+  .masthead {
+    background: var(--accent2);
+    color: #fff;
+    padding: 64px 48px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .masthead::after {
+    content: '';
+    position: absolute; bottom: 0; right: 0;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(201,134,10,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .masthead-kicker {
+    font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(255,255,255,0.55); margin-bottom: 16px; font-weight: 600;
+  }
+  .masthead-name {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(2.8rem, 6vw, 4rem); line-height: 1.05;
+    margin-bottom: 10px;
+  }
+  .masthead-name span { color: #f0b558; }
+  .masthead-role {
+    font-size: 1.05rem; color: rgba(255,255,255,0.75);
+    font-weight: 400; margin-bottom: 28px;
+  }
+  .masthead-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+  .masthead-pill {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em;
+    padding: 4px 14px; border-radius: 9999px;
+    border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.85);
+  }
+  .masthead-meta {
+    display: flex; flex-wrap: wrap; gap: 20px;
+    font-size: 0.78rem; color: rgba(255,255,255,0.55);
+  }
+  .masthead-meta a { color: #f0b558; text-decoration: none; }
+  .masthead-stats {
+    display: flex; flex-wrap: wrap; gap: 24px; margin-top: 28px;
+    padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.12);
+  }
+  .mstat { text-align: center; }
+  .mstat-num { font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800; color: #f0b558; line-height: 1; }
+  .mstat-label { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 3px; }
+
+  /* ── TOC ──────────────────────────────── */
+  .toc {
+    background: var(--warm); border-bottom: 1px solid var(--rule);
+    padding: 28px 48px;
+  }
+  .toc-title {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px; font-weight: 600;
+  }
+  .toc-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 6px 32px;
+  }
+  .toc-item {
+    font-size: 0.82rem; color: var(--accent2); text-decoration: none;
+    display: flex; align-items: center; gap: 8px; padding: 3px 0;
+    transition: color 0.15s;
+  }
+  .toc-item:hover { color: var(--accent); }
+  .toc-num { font-size: 0.65rem; color: var(--muted); font-weight: 600; min-width: 18px; }
+
+  /* ── Main Layout ──────────────────────── */
+  main { max-width: 900px; margin: 0 auto; padding: 0 48px 80px; }
+
+  /* ── Section shell ────────────────────── */
+  .section {
+    margin-top: 56px;
+    padding-top: 56px;
+    border-top: 1px solid var(--rule);
+  }
+  .section:first-child { border-top: none; margin-top: 48px; }
+
+  .section-eyebrow {
+    font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1.55rem; line-height: 1.15; color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .section-intro {
+    font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;
+    background: var(--warm); border-left: 3px solid var(--accent);
+    padding: 10px 16px; border-radius: 0 8px 8px 0;
+  }
+
+  /* ── Letter / Email Box ───────────────── */
+  .letter-box {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 14px; padding: 36px 40px;
+    font-size: 0.9rem; line-height: 1.78; color: #2a2520;
+  }
+  .letter-box p { margin-bottom: 16px; }
+  .letter-box p:last-child { margin-bottom: 0; }
+  .letter-box .letter-meta {
+    font-size: 0.8rem; color: var(--muted); margin-bottom: 28px;
+    padding-bottom: 20px; border-bottom: 1px solid var(--rule);
+    display: flex; flex-wrap: wrap; gap: 6px 20px;
+  }
+  .letter-box .letter-sign { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 0.85rem; }
+  .bold { font-weight: 600; }
+
+  /* ── Short message boxes ──────────────── */
+  .msg-box {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 14px; overflow: hidden;
+  }
+  .msg-label {
+    background: var(--warm); padding: 10px 20px;
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--rule);
+  }
+  .msg-body { padding: 22px 26px; font-size: 0.88rem; line-height: 1.75; color: #2a2520; }
+  .msg-body p { margin-bottom: 12px; }
+  .msg-body p:last-child { margin-bottom: 0; }
+
+  /* ── Cards ────────────────────────────── */
+  .cards-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) { .cards-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 20px 22px;
+  }
+  .card-num {
+    font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+    color: var(--rule); line-height: 1; margin-bottom: 8px;
+  }
+  .card-title { font-weight: 600; font-size: 0.92rem; margin-bottom: 6px; }
+  .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── Numbered list ────────────────────── */
+  .ranked-list { counter-reset: ranked; list-style: none; }
+  .ranked-list li {
+    counter-increment: ranked;
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid var(--rule); font-size: 0.88rem;
+  }
+  .ranked-list li:last-child { border-bottom: none; }
+  .ranked-list li::before {
+    content: counter(ranked, decimal-leading-zero);
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 0.7rem; color: var(--accent); min-width: 28px; padding-top: 2px;
+  }
+  .ranked-title { font-weight: 600; display: block; margin-bottom: 2px; }
+  .ranked-note { color: var(--muted); font-size: 0.78rem; }
+
+  /* ── Strength chips ───────────────────── */
+  .strength-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 580px) { .strength-grid { grid-template-columns: 1fr; } }
+  .strength-card {
+    background: #fff; border: 1px solid var(--rule); border-radius: 12px;
+    padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .strength-icon {
+    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+    background: var(--pill-bg); display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem;
+  }
+  .strength-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 3px; }
+  .strength-why { font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
+
+  /* ── Skill Gap ────────────────────────── */
+  .gap-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .gap-cols { grid-template-columns: 1fr; } }
+  .gap-col {
+    background: #fff; border: 1px solid var(--rule); border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .gap-col-head {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .gap-col-head.green { color: #16a34a; }
+  .gap-col-head.red   { color: #dc2626; }
+  .gap-col-head.blue  { color: var(--accent2); }
+  .gap-list { list-style: none; font-size: 0.82rem; color: var(--ink); }
+  .gap-list li { padding: 5px 0; border-bottom: 1px dashed var(--rule); display: flex; gap: 8px; align-items: flex-start; }
+  .gap-list li:last-child { border-bottom: none; }
+  .gap-bullet { flex-shrink: 0; margin-top: 2px; font-size: 0.65rem; }
+
+  /* ── Brand summary ────────────────────── */
+  .brand-block {
+    background: var(--accent2); color: #fff; border-radius: 14px;
+    padding: 32px 36px;
+  }
+  .brand-block + .brand-block { margin-top: 14px; background: #fff; color: var(--ink); border: 1px solid var(--rule); }
+  .brand-label {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); margin-bottom: 12px; font-weight: 700;
+  }
+  .brand-block + .brand-block .brand-label { color: var(--muted); }
+  .brand-statement { font-size: 1.05rem; font-weight: 500; line-height: 1.65; }
+  .brand-block + .brand-block .brand-statement { font-size: 0.92rem; color: #2a2520; }
+
+  /* ── Interview talking points ─────────── */
+  .tp-list { list-style: none; }
+  .tp-item {
+    background: #fff; border: 1px solid var(--rule); border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 12px; display: flex; gap: 18px;
+  }
+  .tp-item:last-child { margin-bottom: 0; }
+  .tp-tag {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); background: var(--pill-bg);
+    padding: 3px 10px; border-radius: 9999px; height: fit-content;
+    white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+  }
+  .tp-text { font-size: 0.87rem; line-height: 1.68; }
+  .tp-hint { font-size: 0.76rem; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+  /* ── Intro box ────────────────────────── */
+  .intro-box {
+    background: var(--warm); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 28px 32px;
+    font-size: 0.92rem; line-height: 1.78; color: #2a2520;
+  }
+  .intro-timing {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.72rem; color: var(--muted); margin-top: 20px;
+    padding-top: 16px; border-top: 1px solid var(--rule);
+  }
+  .intro-timing strong { color: var(--accent2); }
+
+  /* ── Pills / tags ─────────────────────── */
+  .pill {
+    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    padding: 3px 12px; border-radius: 9999px;
+    background: var(--pill-bg); color: var(--accent); margin: 3px 3px 3px 0;
+  }
+
+  /* ── Roadmap ──────────────────────────── */
+  .roadmap { display: flex; flex-direction: column; gap: 0; }
+  .rm-phase {
+    display: flex; gap: 20px; padding: 18px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .rm-phase:last-child { border-bottom: none; }
+  .rm-line { display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 48px; }
+  .rm-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 4px; }
+  .rm-bar { flex: 1; width: 2px; background: var(--rule); margin-top: 4px; }
+  .rm-phase:last-child .rm-bar { display: none; }
+  .rm-time { font-size: 0.65rem; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; margin-top: 8px; text-align: center; }
+  .rm-content { flex: 1; }
+  .rm-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+  .rm-items { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── Footer ───────────────────────────── */
+  .doc-footer {
+    text-align: center; padding: 32px 48px;
+    border-top: 1px solid var(--rule); color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 640px) {
+    .masthead, main, .toc { padding-left: 24px; padding-right: 24px; }
+    .letter-box { padding: 24px 20px; }
+  }
+  @media print {
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ MASTHEAD ════════════════════════════════════════════ -->
+<div class="masthead">
+  <div class="masthead-kicker">Job Search & Personal Branding Toolkit · Business Development Executive</div>
+  <h1 class="masthead-name">Rahul <span>Mayur</span></h1>
+  <p class="masthead-role">PGDM Candidate · IMS Ghaziabad &nbsp;|&nbsp; Strategy · Analytics · Growth</p>
+  <div class="masthead-pills">
+    <span class="masthead-pill">Business Development</span>
+    <span class="masthead-pill">Market Research</span>
+    <span class="masthead-pill">Digital Marketing</span>
+    <span class="masthead-pill">Sales Strategy</span>
+    <span class="masthead-pill">Data Analytics</span>
+    <span class="masthead-pill">FMCG · Modern Trade</span>
+  </div>
+  <div class="masthead-meta">
+    <span>📧 <a href="mailto:a2025pgdm4941@imsgzb.ac.in">a2025pgdm4941@imsgzb.ac.in</a></span>
+    <span>📞 +91 73551 62401</span>
+    <span>🔗 <a href="https://linkedin.com/in/rahul-mayur-545884350" target="_blank">linkedin.com/in/rahul-mayur-545884350</a></span>
+    <span>📍 Ghaziabad, Uttar Pradesh</span>
+  </div>
+  <div class="masthead-stats">
+    <div class="mstat"><div class="mstat-num">9.43</div><div class="mstat-label">TGPA · PGDM</div></div>
+    <div class="mstat"><div class="mstat-num">4</div><div class="mstat-label">Internships</div></div>
+    <div class="mstat"><div class="mstat-num">#1</div><div class="mstat-label">AIMA Regional</div></div>
+    <div class="mstat"><div class="mstat-num">3</div><div class="mstat-label">Int'l Conferences</div></div>
+    <div class="mstat"><div class="mstat-num">5</div><div class="mstat-label">Certifications</div></div>
+  </div>
+</div>
+
+<!-- ══ TABLE OF CONTENTS ══════════════════════════════════ -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a class="toc-item" href="#s1"><span class="toc-num">01</span> ATS-Friendly Cover Letter</a>
+    <a class="toc-item" href="#s2"><span class="toc-num">02</span> Recruiter Outreach Email</a>
+    <a class="toc-item" href="#s3"><span class="toc-num">03</span> Hiring Manager Email</a>
+    <a class="toc-item" href="#s4"><span class="toc-num">04</span> LinkedIn Connection Request</a>
+    <a class="toc-item" href="#s5"><span class="toc-num">05</span> Referral Request Message</a>
+    <a class="toc-item" href="#s6"><span class="toc-num">06</span> Follow-Up Email</a>
+    <a class="toc-item" href="#s7"><span class="toc-num">07</span> 30-Second Professional Introduction</a>
+    <a class="toc-item" href="#s8"><span class="toc-num">08</span> Top 10 Job Titles for My Profile</a>
+    <a class="toc-item" href="#s9"><span class="toc-num">09</span> Key Strengths Recruiters Will Notice</a>
+    <a class="toc-item" href="#s10"><span class="toc-num">10</span> Skill Gap Analysis & Roadmap</a>
+    <a class="toc-item" href="#s11"><span class="toc-num">11</span> Personal Brand Summary</a>
+    <a class="toc-item" href="#s12"><span class="toc-num">12</span> Interview Talking Points</a>
+  </div>
+</div>
+
+<!-- ══ MAIN ════════════════════════════════════════════════ -->
+<main>
+
+<!-- S1 ─ Cover Letter ──────────────────────────────────── -->
+<div class="section" id="s1">
+  <div class="section-eyebrow">Section 01</div>
+  <h2 class="section-title">ATS-Friendly Cover Letter</h2>
+  <div class="section-intro">Ready to paste into any application portal. Replace [Company Name] and [Hiring Manager's Name] with actual details before sending.</div>
+  <div class="letter-box">
+    <div class="letter-meta">
+      <span><strong>From:</strong> Rahul Mayur · a2025pgdm4941@imsgzb.ac.in · +91 73551 62401</span>
+      <span><strong>Position:</strong> Business Development Executive</span>
+      <span><strong>Location:</strong> Lucknow, Uttar Pradesh (Hybrid)</span>
+    </div>
+
+    <p>Dear [Hiring Manager's Name],</p>
+
+    <p>I am writing to apply for the <span class="bold">Business Development Executive</span> position at [Company Name]. As a PGDM candidate at the Institute of Management Studies, Ghaziabad — where I maintain a <span class="bold">9.43 TGPA</span> among the top performers in my batch — with hands-on experience in FMCG sales, digital marketing, and market research, I am confident in my ability to generate qualified leads, build lasting client relationships, and contribute directly to your revenue targets.</p>
+
+    <p>My current internship at <span class="bold">Bikanervala Foods Pvt. Ltd. (Bikano)</span> — a global FMCG brand with a $400 million turnover — has given me direct exposure to exactly the skills this role demands. I conduct structured consumer preference surveys across modern trade outlets, run rigorous competitor and price-benchmarking audits, monitor retail merchandising execution, and prepare weekly data-driven reports that feed into sales conversion strategies. This experience has sharpened my ability to translate field intelligence into actionable business insights — a core requirement for any business development function.</p>
+
+    <p>Prior to this, I worked as a <span class="bold">Digital Marketing Intern at Tripple One Solutions</span>, where I developed and executed cross-platform digital strategies, analysed KPIs to optimise brand reach, and earned outstanding performance remarks from the organisation. My certified skills in <span class="bold">Data Analytics, Data Visualization (Forage)</span>, and <span class="bold">Generative AI (NASSCOM)</span> enable me to leverage CRM data and market trends to build smarter, more targeted outreach pipelines.</p>
+
+    <p>Beyond internships, I was recognised as a <span class="bold">National Finalist at the AIMA 7th Chanakya Business Simulation Games (2026)</span> at MIT-ADT University, Pune — competing against teams from premier management institutions across India. This simulation placed me in high-stakes, real-time strategic decision-making scenarios closely mirroring the challenges of business development, including pipeline management, negotiation, and revenue forecasting.</p>
+
+    <p>I also represented India at the <span class="bold">Bali International Conference on Project Management (2025)</span> and participated in two AIBPM international conferences on AI and sustainable strategy — demonstrating the cross-cultural awareness and stakeholder communication skills essential for client-facing roles.</p>
+
+    <p>I am eager to bring my analytical mindset, field-tested market research capabilities, and results-driven work ethic to your business development team in Lucknow. I would welcome the opportunity to discuss how my background aligns with your growth goals.</p>
+
+    <div class="letter-sign">
+      <p>Warm regards,</p>
+      <p><strong>Rahul Mayur</strong></p>
+      <p style="color:#6b6560;font-size:0.82rem">PGDM · IMS Ghaziabad &nbsp;·&nbsp; +91 73551 62401 &nbsp;·&nbsp; a2025pgdm4941@imsgzb.ac.in</p>
+      <p style="color:#6b6560;font-size:0.82rem">linkedin.com/in/rahul-mayur-545884350</p>
+    </div>
+  </div>
+</div>
+
+<!-- S2 ─ Recruiter Outreach ────────────────────────────── -->
+<div class="section" id="s2">
+  <div class="section-eyebrow">Section 02</div>
+  <h2 class="section-title">Recruiter Outreach Email</h2>
+  <div class="section-intro">Send this to recruiters who posted the BD Executive role or work at relevant staffing firms. Keep subject line exactly as shown — it is optimised for open rates.</div>
+  <div class="msg-box">
+    <div class="msg-label">Subject Line</div>
+    <div class="msg-body"><p><strong>BD Executive Candidate · PGDM @ IMS Gzb · AIMA National Finalist · 4 Internships · Immediate Joiner</strong></p></div>
+    <div class="msg-label">Email Body</div>
+    <div class="msg-body">
+      <p>Hi [Recruiter's Name],</p>
+      <p>I came across the Business Development Executive opening at [Company Name] and wanted to reach out directly, as I believe my background is a strong fit for what you're looking for.</p>
+      <p>I am a PGDM student at IMS Ghaziabad (9.43 TGPA) currently interning as a Sales Intern in the Modern Trade division of Bikanervala Foods (Bikano) — a $400M FMCG brand — where I am conducting competitor benchmarking, consumer surveys, and retail analytics to support sales strategy. Prior to this, I completed a digital marketing internship at Tripple One Solutions with outstanding performance remarks, and a research internship at IISPPR focused on public policy and sustainability.</p>
+      <p>I was also a National Finalist at the AIMA 7th Chanakya Business Simulation Games (2026) — competing against premier B-school teams across India in live strategic scenarios covering revenue growth, pipeline management, and negotiation.</p>
+      <p>Key skills I bring: market research, lead qualification, competitor analysis, data-driven reporting, cross-platform digital marketing, and presentation. I hold 5 professional certifications including NASSCOM GenAI and Forage Data Analytics.</p>
+      <p>I am open to the Lucknow hybrid role and available to join promptly post internship. I would appreciate 15 minutes to discuss fit. My resume is attached.</p>
+      <p>Thank you for your time.</p>
+      <p><strong>Rahul Mayur</strong><br>
+      +91 73551 62401 &nbsp;·&nbsp; a2025pgdm4941@imsgzb.ac.in<br>
+      linkedin.com/in/rahul-mayur-545884350</p>
+    </div>
+  </div>
+</div>
+
+<!-- S3 ─ Hiring Manager Email ──────────────────────────── -->
+<div class="section" id="s3">
+  <div class="section-eyebrow">Section 03</div>
+  <h2 class="section-title">Hiring Manager Email</h2>
+  <div class="section-intro">Use when you can identify the Hiring Manager or Sales Head directly on LinkedIn. This is warmer in tone and highlights strategic impact over tasks.</div>
+  <div class="msg-box">
+    <div class="msg-label">Subject Line</div>
+    <div class="msg-body"><p><strong>Interested in the BD Executive Role · Market Research + Sales Analytics Background · Rahul Mayur</strong></p></div>
+    <div class="msg-label">Email Body</div>
+    <div class="msg-body">
+      <p>Dear [Manager's Name],</p>
+      <p>I noticed your team is hiring a Business Development Executive, and I wanted to reach out personally because I believe my work and academic background map closely to what this role requires.</p>
+      <p>I am currently interning in the Modern Trade sales division of Bikano, where my day-to-day involves designing consumer insight surveys, conducting competitor price audits, and translating field data into weekly strategic reports for the sales team. This has given me a practical understanding of how market intelligence directly influences conversion strategy — which I understand is central to your BD function.</p>
+      <p>Before that, I spent two months executing cross-platform digital marketing campaigns at Tripple One Solutions, analysing KPIs, and optimising for brand engagement — building a foundation in lead tracking and campaign performance that translates directly into CRM-based pipeline management.</p>
+      <p>I'm completing my PGDM at IMS Ghaziabad with a 9.43 TGPA, and was a National Finalist at the AIMA Business Simulation Games — an experience that sharpened my strategic decision-making under competitive pressure, much like closing a client deal under a deadline.</p>
+      <p>I'd value a brief conversation about how I can contribute to your business development goals. Would you have 15 minutes this week or next?</p>
+      <p>Resume attached for your reference.</p>
+      <p>Best regards,<br><strong>Rahul Mayur</strong><br>
+      +91 73551 62401 &nbsp;·&nbsp; a2025pgdm4941@imsgzb.ac.in<br>
+      linkedin.com/in/rahul-mayur-545884350</p>
+    </div>
+  </div>
+</div>
+
+<!-- S4 ─ LinkedIn Connection Request ──────────────────── -->
+<div class="section" id="s4">
+  <div class="section-eyebrow">Section 04</div>
+  <h2 class="section-title">LinkedIn Connection Request</h2>
+  <div class="section-intro">Maximum 300 characters. Send this with every recruiter or hiring manager connection request. Personalise the name.</div>
+  <div class="msg-box">
+    <div class="msg-label">Message (288 characters)</div>
+    <div class="msg-body">
+      <p>Hi [Name], I'm Rahul — PGDM student at IMS Ghaziabad (9.43 TGPA), AIMA National Finalist, currently interning in FMCG sales at Bikano. Interested in the BD Executive role at [Company]. Would love to connect and learn more. Thank you!</p>
+    </div>
+  </div>
+  <div style="margin-top:14px">
+    <div class="msg-box">
+      <div class="msg-label">Alternate Version — After Applying (286 characters)</div>
+      <div class="msg-body">
+        <p>Hi [Name], I recently applied for the BD Executive role at [Company]. I'm Rahul — PGDM @ IMS Ghaziabad, AIMA National Finalist, with sales and market research experience at Bikano. Happy to connect and answer any questions directly!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S5 ─ Referral Request ──────────────────────────────── -->
+<div class="section" id="s5">
+  <div class="section-eyebrow">Section 05</div>
+  <h2 class="section-title">Referral Request Message</h2>
+  <div class="section-intro">Send to seniors, professors, or existing contacts who work at or know someone at the target company. Respectful, clear, and easy to say yes to.</div>
+  <div class="msg-box">
+    <div class="msg-label">WhatsApp / LinkedIn Message</div>
+    <div class="msg-body">
+      <p>Hi [Name], hope you're doing well!</p>
+      <p>I wanted to reach out because [Company Name] is hiring a Business Development Executive in Lucknow, and I believe this is a strong match for my profile. You mentioned you have a connection there / I saw you're connected with [Person at Company] on LinkedIn — would you be comfortable introducing me or passing along my resume?</p>
+      <p>To make it easy: I'm a PGDM student at IMS Ghaziabad (9.43 TGPA), currently interning at Bikano in FMCG sales. I was a National Finalist at the AIMA Business Simulation Games this year and have experience in market research, digital marketing, and data-driven reporting across 4 internships.</p>
+      <p>No pressure at all — I completely understand if it's not possible. If yes, I'll send you my resume right away. Thank you so much for considering this!</p>
+      <p>Warm regards,<br><strong>Rahul</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- S6 ─ Follow-Up Email ───────────────────────────────── -->
+<div class="section" id="s6">
+  <div class="section-eyebrow">Section 06</div>
+  <h2 class="section-title">Follow-Up Email</h2>
+  <div class="section-intro">Send exactly 5 business days after your first email or application, if no response. One follow-up only — this keeps it professional and persistent without being pushy.</div>
+  <div class="msg-box">
+    <div class="msg-label">Subject Line</div>
+    <div class="msg-body"><p><strong>Following Up — BD Executive Application · Rahul Mayur</strong></p></div>
+    <div class="msg-label">Email Body</div>
+    <div class="msg-body">
+      <p>Dear [Name],</p>
+      <p>I wanted to follow up on my application for the Business Development Executive position at [Company Name], sent on [Date]. I remain very interested in this opportunity and wanted to ensure my profile reached you.</p>
+      <p>Since sending my application, I have continued my work at Bikano's Modern Trade internship where I recently completed a cross-outlet competitor price benchmarking study across Varanasi — the kind of market intelligence work I'm eager to bring to a BD role focused on lead generation and client acquisition.</p>
+      <p>I understand your team is likely reviewing many candidates, so I'll keep this brief: I'm confident my combination of FMCG market research experience, digital marketing analytics skills, and strategic thinking — as a 9.43 TGPA PGDM student and AIMA National Finalist — can add real value to your business development function.</p>
+      <p>I'd welcome a 15-minute call at your convenience. Thank you for considering my application.</p>
+      <p>Best regards,<br><strong>Rahul Mayur</strong><br>
+      +91 73551 62401 &nbsp;·&nbsp; a2025pgdm4941@imsgzb.ac.in</p>
+    </div>
+  </div>
+</div>
+
+<!-- S7 ─ 30-Second Introduction ───────────────────────── -->
+<div class="section" id="s7">
+  <div class="section-eyebrow">Section 07</div>
+  <h2 class="section-title">30-Second Professional Introduction</h2>
+  <div class="section-intro">Memorise this for interviews, campus placement events, networking meets, and career fairs. Adaptable to both formal panels and informal conversations.</div>
+  <div class="intro-box">
+    <p>"I'm Rahul Mayur, a PGDM student at IMS Ghaziabad, where I'm among the top performers in my batch with a 9.43 TGPA. My focus is at the intersection of business strategy, market research, and client-facing sales.</p>
+    <p>On the ground, I'm currently interning with Bikano — a $400 million FMCG brand — in their Modern Trade sales division, where I conduct consumer surveys, competitor benchmarking, and retail analytics to support sales strategy decisions. Before that, I worked in digital marketing, running cross-platform campaigns and analysing KPIs to improve brand reach.</p>
+    <p>What sets me apart is that I also competed nationally — I was a National Finalist at the AIMA Business Simulation Games this year, competing against teams from India's top B-schools in live strategic decision-making. I find that the thinking required to win a simulation is very similar to what it takes to close a client deal.</p>
+    <p>I'm looking to apply this combination of field experience, analytical thinking, and strategic perspective in a Business Development role — where I can build pipelines, engage clients, and drive measurable revenue growth."</p>
+    <div class="intro-timing">
+      <span>⏱</span>
+      <span><strong>Estimated delivery time: ~28–32 seconds</strong> at a natural, confident pace. Pause briefly between paragraphs for impact.</span>
+    </div>
+  </div>
+</div>
+
+<!-- S8 ─ Top 10 Job Titles ─────────────────────────────── -->
+<div class="section" id="s8">
+  <div class="section-eyebrow">Section 08</div>
+  <h2 class="section-title">Top 10 Job Titles Best Suited for My Profile</h2>
+  <div class="section-intro">Use these titles when searching on LinkedIn Jobs, Naukri, Indeed, Internshala, and Instahyre. They are ranked by fit based on your current experience and skills.</div>
+  <ul class="ranked-list">
+    <li>
+      <div>
+        <span class="ranked-title">Business Development Executive</span>
+        <span class="ranked-note">Highest fit. Directly matches your market research, sales analytics, and client engagement experience from Bikano and digital marketing internships. The JD's 1–3 year experience band accommodates PGDM interns with multiple internships.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Sales Development Representative (SDR)</span>
+        <span class="ranked-note">Strong fit. Your structured survey and lead qualification approach at Bikano maps directly to the outbound prospecting and qualification function of an SDR — especially in SaaS and FMCG sectors.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Market Research Analyst</span>
+        <span class="ranked-note">Strong fit. Consumer surveys, competitor benchmarking, and retail analytics at Bikano — plus the Nusantara international research project on consumer behaviour — make this a natural path.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Brand & Trade Marketing Executive</span>
+        <span class="ranked-note">Good fit. Shelf placement audits, promoter effectiveness studies, and cross-platform digital marketing combine to build a trade marketing profile in FMCG companies.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Digital Marketing Executive</span>
+        <span class="ranked-note">Good fit. Directly backed by two digital marketing roles at Tripple One Solutions, certified skills in SEO, social media analytics, and campaign management.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Client Servicing Executive</span>
+        <span class="ranked-note">Good fit. Your combination of consumer-facing research, stakeholder communication, and cross-cultural management exposure translates well to client-facing account management functions.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Junior Strategy Consultant</span>
+        <span class="ranked-note">Aspiration fit. The AIMA Simulation, Srijan Path project, Marico financial analysis, and international conference participation build a credible strategy profile for consulting firms targeting fresher MBAs.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">FMCG Sales Trainee / Management Trainee</span>
+        <span class="ranked-note">Strong fit. Bikano internship experience in modern trade is a direct entry point to FMCG MT programmes at companies like HUL, ITC, Dabur, Marico, and Godrej.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Research & Policy Analyst (NGO / Think Tanks)</span>
+        <span class="ranked-note">Emerging fit. IISPPR research internship in SDGs and public policy, combined with the Nusantara sustainability project and international conference presence, builds an early-career public policy research profile.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <span class="ranked-title">Product Marketing Associate</span>
+        <span class="ranked-note">Moderate fit. Your 4P marketing strategy project (Srijan Path), NASSCOM GenAI certification, and data analytics skills make you eligible for product marketing roles in consumer and tech startups.</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- S9 ─ Key Strengths ─────────────────────────────────── -->
+<div class="section" id="s9">
+  <div class="section-eyebrow">Section 09</div>
+  <h2 class="section-title">Key Strengths Recruiters Will Notice</h2>
+  <div class="section-intro">These are your standout differentiators — what a recruiter scanning your resume for 8 seconds will pause on and read twice.</div>
+  <div class="strength-grid">
+    <div class="strength-card">
+      <div class="strength-icon">🏆</div>
+      <div>
+        <div class="strength-name">AIMA National Finalist — Proven Competitive Edge</div>
+        <div class="strength-why">Qualifying through Regional, Semifinal, and National rounds — winning the Regional — places Rahul in the top tier of management students in India. Recruiters see this as validated strategic decision-making under pressure, not just academic performance.</div>
+      </div>
+    </div>
+    <div class="strength-card">
+      <div class="strength-icon">📊</div>
+      <div>
+        <div class="strength-name">Live FMCG Sales Experience at a $400M Brand</div>
+        <div class="strength-why">Interning at Bikano in Modern Trade — not a simulated case — means Rahul has conducted real consumer surveys, price audits, and merchandising analyses. This operational exposure is rare for a PGDM student.</div>
+      </div>
+    </div>
+    <div class="strength-card">
+      <div class="strength-icon">🌐</div>
+      <div>
+        <div class="strength-name">International Exposure (Bali + AIBPM x2)</div>
+        <div class="strength-why">Representing India at Bali ICPM and participating in two AIBPM AI & strategy conferences signals a global mindset and cross-cultural communication capability — a differentiator in client-facing and stakeholder management roles.</div>
+      </div>
+    </div>
+    <div class="strength-card">
+      <div class="strength-icon">🤖</div>
+      <div>
+        <div class="strength-name">AI + Data Analytics Certified (NASSCOM + Forage)</div>
+        <div class="strength-why">Certified in Generative AI and Data Analytics while still a student shows proactive upskilling. Recruiters in tech-forward BD teams see this as an ability to work with AI-driven CRM tools and data-backed outreach pipelines.</div>
+      </div>
+    </div>
+    <div class="strength-card">
+      <div class="strength-icon">📈</div>
+      <div>
+        <div class="strength-name">9.43 TGPA — Consistently Top of Batch</div>
+        <div class="strength-why">A near-perfect PGDM score from IMS Ghaziabad tells recruiters that Rahul can manage high workload, absorbs conceptual frameworks quickly, and is disciplined — all traits that transfer to hitting monthly BD targets.</div>
+      </div>
+    </div>
+    <div class="strength-card">
+      <div class="strength-icon">🔁</div>
+      <div>
+        <div class="strength-name">4 Internships Across Sales, Marketing, and Research</div>
+        <div class="strength-why">Accumulating four diverse internships as a PGDM student — spanning FMCG field sales, digital marketing, public policy research, and marketing training — demonstrates versatility, initiative, and a pattern of getting hired repeatedly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S10 ─ Skill Gap Analysis ───────────────────────────── -->
+<div class="section" id="s10">
+  <div class="section-eyebrow">Section 10</div>
+  <h2 class="section-title">Skill Gap Analysis</h2>
+  <div class="section-intro">Mapped against the Business Development Executive JD requirements. Use the roadmap to close gaps before or during your first 90 days in the role.</div>
+  <div class="gap-cols">
+    <div class="gap-col">
+      <div class="gap-col-head green">✔ Current Strengths</div>
+      <ul class="gap-list">
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Market research & consumer insights</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Competitor & price benchmarking</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Data-driven reporting (Excel + Power BI)</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Digital marketing & KPI analysis</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Presentation & communication skills</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>4P marketing strategy execution</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Strategic thinking (AIMA validated)</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Cross-cultural & stakeholder communication</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>Financial analysis (Ratio + Trend Analysis)</li>
+        <li><span class="gap-bullet" style="color:#16a34a">✦</span>AI & Generative AI literacy</li>
+      </ul>
+    </div>
+    <div class="gap-col">
+      <div class="gap-col-head red">✖ Missing / Underdeveloped</div>
+      <ul class="gap-list">
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Hands-on CRM tool usage (Salesforce / Zoho / HubSpot)</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Formal B2B lead generation & pipeline management</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Contract negotiation & deal closing</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Cold outreach scripting (calls + emails)</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Proposal and quotation writing</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Sales forecasting methodology</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Client retention strategy</li>
+        <li><span class="gap-bullet" style="color:#dc2626">▸</span>Revenue attribution tracking</li>
+      </ul>
+    </div>
+    <div class="gap-col">
+      <div class="gap-col-head blue">↑ Partially Present / Growing</div>
+      <ul class="gap-list">
+        <li><span class="gap-bullet" style="color:#1a3a5c">◈</span>Inbound/outbound channel management (digital internship)</li>
+        <li><span class="gap-bullet" style="color:#1a3a5c">◈</span>Industry trend tracking (Bikano audits)</li>
+        <li><span class="gap-bullet" style="color:#1a3a5c">◈</span>Client relationship building (survey/outlet contacts)</li>
+        <li><span class="gap-bullet" style="color:#1a3a5c">◈</span>Target-oriented mindset (AIMA + KPI tracking)</li>
+        <li><span class="gap-bullet" style="color:#1a3a5c">◈</span>Account management basics (digital campaigns)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top: 28px;">
+    <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:16px;color:var(--ink)">Recommended Learning Roadmap</h3>
+    <div class="roadmap">
+      <div class="rm-phase">
+        <div class="rm-line"><div class="rm-dot"></div><div class="rm-bar"></div><div class="rm-time">Week 1–2</div></div>
+        <div class="rm-content">
+          <div class="rm-title">CRM Basics — Free HubSpot Academy Certification</div>
+          <div class="rm-items">Complete HubSpot's free "CRM Fundamentals" and "Sales Software" certifications (2–4 hours each). Learn pipeline stages, deal tracking, and contact management. Add the certification badge to your LinkedIn immediately.</div>
+        </div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-line"><div class="rm-dot"></div><div class="rm-bar"></div><div class="rm-time">Week 3–4</div></div>
+        <div class="rm-content">
+          <div class="rm-title">Cold Outreach + Lead Generation Fundamentals</div>
+          <div class="rm-items">Study Aaron Ross's "Predictable Revenue" framework (free summaries available). Practice writing 3 cold email templates for different prospect personas. Watch 5–10 sales call recordings on YouTube (e.g. Sandler Training, JB Sales). Enrol in LinkedIn Sales Navigator free trial.</div>
+        </div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-line"><div class="rm-dot"></div><div class="rm-bar"></div><div class="rm-time">Month 2</div></div>
+        <div class="rm-content">
+          <div class="rm-title">Proposal Writing + Sales Forecasting</div>
+          <div class="rm-items">Download 3–5 real business proposal templates (Pandadoc or Proposify free resources). Practice building a mock sales forecast model in Excel using pipeline conversion rates. Attend one free online BD workshop via NIIT, IIM Bangalore MOOC, or Coursera audit.</div>
+        </div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-line"><div class="rm-dot"></div><div class="rm-bar"></div><div class="rm-time">Month 3</div></div>
+        <div class="rm-content">
+          <div class="rm-title">Negotiation Skills — Google / Yale Free Course</div>
+          <div class="rm-items">Complete Yale's "Introduction to Negotiation" on Coursera (free to audit) or Google's Professional Certificate modules. Apply frameworks from your Bikano price benchmarking experience as live negotiation case studies in interviews.</div>
+        </div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-line"><div class="rm-dot"></div><div class="rm-bar"></div><div class="rm-time">Ongoing</div></div>
+        <div class="rm-content">
+          <div class="rm-title">B2B Sales Mindset + Revenue Attribution</div>
+          <div class="rm-items">Follow sales thought leaders (Justin Welsh, Jeb Blount) on LinkedIn. Set up a personal tracker in Excel to monitor hypothetical pipeline conversion rates. Ask mentors or senior sales colleagues at your next role to shadow calls in the first 30 days.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S11 ─ Personal Brand Summary ───────────────────────── -->
+<div class="section" id="s11">
+  <div class="section-eyebrow">Section 11</div>
+  <h2 class="section-title">Personal Brand Summary</h2>
+
+  <div class="brand-block">
+    <div class="brand-label">Unique Value Proposition</div>
+    <div class="brand-statement">I am a data-informed business development professional who combines field-tested FMCG sales experience, AI-certified analytics capability, and validated strategic thinking — as a national-level business simulation finalist — to build client pipelines that are grounded in real market intelligence, not guesswork.</div>
+  </div>
+
+  <div class="brand-block" style="background:#fff;color:var(--ink);border:1px solid var(--rule);margin-top:14px">
+    <div class="brand-label" style="color:var(--muted)">Professional Positioning Statement</div>
+    <div class="brand-statement" style="font-size:0.92rem;color:#2a2520">PGDM student at IMS Ghaziabad (9.43 TGPA) with active experience in FMCG modern trade sales (Bikano, $400M brand), digital marketing analytics, and sustainability research. National Finalist at AIMA's 7th Chanakya Business Simulation (2026). Certified in AI, Data Analytics, and Cybersecurity. Seeking a Business Development role where analytical rigour, market insight, and strategic communication drive client acquisition and revenue growth.</div>
+  </div>
+
+  <div style="margin-top:14px;background:var(--warm);border:1px solid var(--rule);border-radius:14px;padding:24px 28px">
+    <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Recruiter Headline Options (LinkedIn / Resume)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:#fff;border:1px solid var(--rule);border-radius:9px;padding:12px 16px;font-size:0.88rem;font-weight:600;color:var(--ink)">
+        🥇 Primary: PGDM @ IMS Ghaziabad · AIMA National Finalist · Sales & BD | Market Research | Data Analytics | FMCG | Open to Opportunities
+      </div>
+      <div style="background:#fff;border:1px solid var(--rule);border-radius:9px;padding:12px 16px;font-size:0.88rem;font-weight:600;color:var(--ink)">
+        🥈 Alternate: Business Development & Strategy | FMCG Sales Intern @Bikano | PGDM IMS Ghaziabad 9.43 TGPA | AIMA National Finalist 2026
+      </div>
+      <div style="background:#fff;border:1px solid var(--rule);border-radius:9px;padding:12px 16px;font-size:0.88rem;font-weight:600;color:var(--ink)">
+        🥉 Short Form: Aspiring BD Professional | PGDM IMS Gzb | National Finalist AIMA | 4 Internships | Analytics + Sales
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S12 ─ Interview Talking Points ─────────────────────── -->
+<div class="section" id="s12">
+  <div class="section-eyebrow">Section 12</div>
+  <h2 class="section-title">Interview Talking Points</h2>
+  <div class="section-intro">These are the exact stories and facts to prepare for a BD Executive interview. Structure each answer using the STAR method (Situation → Task → Action → Result).</div>
+  <ul class="tp-list">
+
+    <li class="tp-item">
+      <span class="tp-tag">Top Story</span>
+      <div>
+        <div class="tp-text"><strong>AIMA National Finalist — Strategic Decision-Making Under Pressure.</strong> Walk through how you qualified from the Regional (where you won 1st place) through the Semifinal to the National Finals at MIT-ADT University, Pune. Describe the business simulation scenarios — revenue targets, competitor moves, live decision-making — and connect it explicitly to how BD executives face similar pressures when closing deals under a monthly target deadline. This is your most powerful differentiator.</div>
+        <div class="tp-hint">Use this when asked: "What's your biggest achievement?" / "Tell me about a time you worked under pressure" / "What makes you different from other candidates?"</div>
+      </div>
+    </li>
+
+    <li class="tp-item">
+      <span class="tp-tag">Experience</span>
+      <div>
+        <div class="tp-text"><strong>Bikano Modern Trade Internship — Field Sales & Market Intelligence.</strong> Describe how you designed consumer preference surveys across multiple retail outlets, what buying behaviours you found, and how your competitor price benchmarking identified specific market gaps. Quantify where possible: number of outlets covered, competing SKUs compared, frequency of reports submitted. Frame this as your direct experience in translating market intelligence into sales strategy — identical to what a BD executive does for client pipeline decisions.</div>
+        <div class="tp-hint">Use this when asked: "Do you have sales experience?" / "Tell me about market research you've done" / "How would you approach lead generation?"</div>
+      </div>
+    </li>
+
+    <li class="tp-item">
+      <span class="tp-tag">Initiative</span>
+      <div>
+        <div class="tp-text"><strong>Digital Marketing KPI Analysis — Tripple One Solutions.</strong> Describe your two-month digital marketing internship where you developed cross-platform strategies and analysed engagement and reach KPIs. Highlight the "outstanding performance remarks" you received — be ready to explain what specific tasks earned that recognition (e.g. improving campaign reach, identifying a channel that outperformed others). Connect this to the BD role's expectation of inbound channel management and digital lead generation.</div>
+        <div class="tp-hint">Use this when asked: "Have you used data to make a business decision?" / "How do you track performance?" / "Tell me about your marketing experience."</div>
+      </div>
+    </li>
+
+    <li class="tp-item">
+      <span class="tp-tag">Project</span>
+      <div>
+        <div class="tp-text"><strong>Srijan Path — 4P Marketing Strategy for Local Artisans.</strong> Describe how you led a 3-month field study identifying the economic challenges of local artisans, developed a tailored 4P (Product, Price, Place, Promotion) marketing strategy, and used AI-supported tools for analysis. This story demonstrates: the ability to understand a client's pain point, develop a go-to-market strategy, and use analytical tools to back your recommendations — precisely the skills a BD executive uses when building client proposals.</div>
+        <div class="tp-hint">Use this when asked: "Have you developed a strategy from scratch?" / "Tell me about a project you're proud of" / "How do you approach a new market or client segment?"</div>
+      </div>
+    </li>
+
+    <li class="tp-item">
+      <span class="tp-tag">Leadership</span>
+      <div>
+        <div class="tp-text"><strong>Vice-Head, Cultural Committee, MGKVP.</strong> Explain how you overhauled internal reporting processes, streamlined workflows, and reduced turnaround time across key committee functions. Frame this as evidence of process improvement and stakeholder coordination — qualities that are directly relevant to maintaining accurate CRM records and coordinating with sales and marketing teams in a BD role.</div>
+        <div class="tp-hint">Use this when asked: "Have you held any leadership positions?" / "Tell me about a time you improved a process" / "How do you manage multiple responsibilities?"</div>
+      </div>
+    </li>
+
+    <li class="tp-item">
+      <span class="tp-tag">Global View</span>
+      <div>
+        <div class="tp-text"><strong>Nusantara Project + Bali ICPM — Cross-Cultural Market Research.</strong> Describe your collaboration with an international team studying eco-friendly purchase intentions among Malaysian F&B consumers, and your participation in the Bali International Conference on Cultural Intelligence in Global Management. This directly supports your ability to work with diverse clients and understand consumer behaviour across different cultural and demographic contexts — an edge in B2B client relationship management.</div>
+        <div class="tp-hint">Use this when asked: "How do you handle diverse clients?" / "Tell me about working in cross-functional teams" / "What global exposure do you have?"</div>
+      </div>
+    </li>
+
+    <li class="tp-item">
+      <span class="tp-tag">Likely Q&A</span>
+      <div>
+        <div class="tp-text"><strong>Areas Recruiters Are Likely to Probe — Prepare Your Answers.</strong>
+        (1) <em>"You don't have direct B2B sales experience — how will you handle targets?"</em> → Answer: Emphasise your Bikano field sales exposure, AIMA simulation, and structured approach to market research, and mention your HubSpot CRM learning plan.
+        (2) <em>"Where do you see yourself in 3 years?"</em> → Answer: Senior BD Manager or Client Success Lead, having built a client portfolio, mastered CRM-driven pipeline management, and led a small BD team.
+        (3) <em>"Why BD, not Marketing or Analytics?"</em> → Answer: You want the accountability of results — revenue, clients, conversions. BD is where strategy meets execution, and you've seen from both internships how market intelligence directly turns into sales outcomes.</div>
+        <div class="tp-hint">Prepare 2-minute answers for each of these before your interview. Practice aloud with a timer.</div>
+      </div>
+    </li>
+
+  </ul>
+
+  <div style="margin-top:24px;background:var(--warm);border:1px solid var(--rule);border-radius:12px;padding:20px 24px">
+    <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Quick-Reference Skill Tags to Drop in Answers</div>
+    <div>
+      <span class="pill">Market Research</span><span class="pill">Consumer Behaviour</span><span class="pill">Competitor Benchmarking</span><span class="pill">4P Marketing Strategy</span><span class="pill">Data-Driven Reporting</span><span class="pill">KPI Analysis</span><span class="pill">Cross-Platform Digital Strategy</span><span class="pill">FMCG Modern Trade</span><span class="pill">Financial Ratio Analysis</span><span class="pill">Business Simulation</span><span class="pill">Cross-Cultural Management</span><span class="pill">GenAI Certified</span><span class="pill">Power BI</span><span class="pill">MS Excel</span><span class="pill">Strategic Decision-Making</span><span class="pill">Stakeholder Communication</span>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════ -->
+<div class="doc-footer">
+  <strong>Rahul Mayur — Job Search & Personal Branding Toolkit</strong><br>
+  Generated for Business Development Executive Application · Lucknow, Uttar Pradesh (Hybrid)<br>
+  <span style="color:#b8b0a8">a2025pgdm4941@imsgzb.ac.in &nbsp;·&nbsp; +91 73551 62401 &nbsp;·&nbsp; linkedin.com/in/rahul-mayur-545884350</span>
+</div>
+
+</body>
+</html>
