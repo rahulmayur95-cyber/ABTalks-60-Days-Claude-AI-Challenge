@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Intelligence Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root {
+  --bg:       #060810;
+  --bg2:      #0a0d14;
+  --panel:    #0d1017;
+  --border:   rgba(255,80,30,0.25);
+  --orange:   #ff5a1e;
+  --orange2:  #ff7a3d;
+  --orange-g: #ff3d00;
+  --blue:     #4a9eff;
+  --red:      #ff3333;
+  --white:    #f0f4ff;
+  --muted:    #6b7a96;
+  --muted2:   #4a5568;
+  --text-sm:  #8899bb;
+}
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STADIUM BG ── */
+.stadium-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 65% 40%, rgba(255,70,20,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 10%, rgba(255,120,40,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 50% 80%, rgba(10,20,50,0.8) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Stadium lights effect */
+.stadium-bg::before {
+  content:'';
+  position:absolute;
+  top:0; right:0;
+  width:55%; height:45%;
+  background:
+    radial-gradient(ellipse at 80% 5%, rgba(255,200,100,0.18) 0%, transparent 40%),
+    radial-gradient(ellipse at 95% 15%, rgba(255,220,150,0.12) 0%, transparent 30%),
+    radial-gradient(ellipse at 70% 8%, rgba(255,180,80,0.1) 0%, transparent 35%);
+}
+
+/* World map dots subtle */
+.stadium-bg::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image: radial-gradient(circle, rgba(255,80,30,0.15) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 55% 55% at 58% 35%, black 0%, transparent 70%);
+  opacity:0.4;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  gap: 16px;
+}
+
+/* ══ LEFT PANEL ══ */
+.left-panel {
+  grid-row: 1 / 4;
+  background: rgba(10,13,20,0.92);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+
+.left-panel::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:3px;
+  background: linear-gradient(90deg, var(--orange-g), var(--orange2), transparent);
+}
+
+/* Day badge */
+.day-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,90,30,0.2);
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 0.1em;
+  margin-bottom: 18px;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.panel-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.panel-subtitle {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+/* Score ring */
+.score-ring-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.ring-svg { width: 90px; height: 90px; flex-shrink: 0; }
+
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 7; }
+.ring-fill {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 226;
+  stroke-dashoffset: 199; /* 32% of 226 = ~72px filled */
+  transform: rotate(-90deg);
+  transform-origin: center;
+  filter: drop-shadow(0 0 6px rgba(255,90,30,0.7));
+}
+
+.ring-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-container { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
+
+.score-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.score-denom {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.classification-block {}
+.class-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.class-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.1;
+}
+.class-detail {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Divider */
+.panel-divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 20px 0;
+}
+
+/* Personality Match */
+.pm-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.pm-row {
+  margin-bottom: 14px;
+}
+
+.pm-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.pm-name-messi {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.08em;
+}
+.pm-name-ronaldo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.08em;
+}
+
+.pm-pct-messi { font-size: 18px; font-weight: 700; color: var(--blue); }
+.pm-pct-ronaldo { font-size: 18px; font-weight: 700; color: var(--red); }
+
+.pm-bar {
+  height: 5px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.pm-fill-messi {
+  height: 100%;
+  width: 81%;
+  background: linear-gradient(90deg, #1a4a8a, var(--blue));
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(74,158,255,0.5);
+}
+.pm-fill-ronaldo {
+  height: 100%;
+  width: 52%;
+  background: linear-gradient(90deg, #7a1a1a, var(--red));
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(255,51,51,0.5);
+}
+
+.pm-tags {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Archetype */
+.archetype-section { margin-top: 6px; }
+.arch-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.arch-badge {
+  border: 1px solid var(--orange);
+  border-radius: 5px;
+  padding: 10px 14px;
+  text-align: center;
+  background: rgba(255,90,30,0.05);
+}
+
+.arch-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.arch-desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Footer tagline */
+.panel-footer {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted2);
+  text-transform: uppercase;
+  text-align: center;
+}
+.panel-footer span { color: var(--orange); }
+
+/* ══ TOP-RIGHT: PREDICTION HEADER ══ */
+.top-right {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.prediction-header {
+  background: rgba(10,13,20,0.7);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 20px 22px;
+  backdrop-filter: blur(8px);
+}
+
+.pred-section-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--orange);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pred-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+}
+
+.pred-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pred-mini {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.pred-mini::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+}
+.pred-mini.winner::before { background: linear-gradient(90deg, #ffd700, #ffaa00); }
+.pred-mini.runner::before { background: linear-gradient(90deg, #aaa, #ddd); }
+.pred-mini.dark::before   { background: linear-gradient(90deg, #2ecc71, #00ff88); }
+
+.pred-mini-medal { font-size: 20px; margin-bottom: 4px; }
+.pred-mini-tag { font-size: 9px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
+.pred-mini-team {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  margin: 2px 0 6px;
+}
+.pred-mini-team.gold   { color: #ffd700; }
+.pred-mini-team.silver { color: #ccc; }
+.pred-mini-team.green  { color: #2ecc71; }
+
+.conf-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+
+.mini-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.mini-fill-gold   { height:100%; background: linear-gradient(90deg,#c8900a,#ffd700); border-radius:2px; }
+.mini-fill-silver { height:100%; background: linear-gradient(90deg,#888,#ccc); border-radius:2px; }
+.mini-fill-green  { height:100%; background: linear-gradient(90deg,#1a7a43,#2ecc71); border-radius:2px; }
+
+.pred-mini-note { font-size: 10px; color: var(--muted); line-height: 1.45; }
+
+/* ══ MIDDLE-RIGHT: PERFORMANCE CHART ══ */
+.mid-right {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Performance chart card */
+.chart-card {
+  background: rgba(10,13,20,0.85);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 18px 16px;
+  backdrop-filter: blur(8px);
+}
+
+.chart-card-title {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.chart-card-sub {
+  font-size: 11px;
+  color: var(--orange);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Mini line chart via SVG */
+.line-chart { width: 100%; height: 90px; }
+
+/* Awareness donut */
+.awareness-card {
+  background: rgba(10,13,20,0.85);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.aware-ring-container { position: relative; width: 100px; height: 100px; }
+.aware-ring-svg { width: 100px; height: 100px; }
+.aware-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 8; }
+.aware-fill {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 251;
+  stroke-dashoffset: 220; /* 32% of 251 */
+  transform: rotate(-90deg);
+  transform-origin: center;
+  filter: drop-shadow(0 0 8px rgba(255,90,30,0.8));
+}
+.aware-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.aware-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--orange);
+  line-height: 1;
+}
+.aware-label {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 3px;
+  text-align: center;
+}
+
+/* ══ BOTTOM PANELS: Strengths + Traits ══ */
+.bottom-right {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Shared strengths */
+.strength-card {
+  background: rgba(10,13,20,0.85);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.strength-header {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.strength-header.messi-h { color: var(--blue); }
+.strength-header.ronaldo-h { color: var(--red); }
+
+.strength-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-sm);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.strength-arrow-messi   { color: var(--blue); font-size: 11px; margin-top: 1px; }
+.strength-arrow-ronaldo { color: var(--red);  font-size: 11px; margin-top: 1px; }
+
+/* Radar / traits card */
+.traits-card {
+  background: rgba(10,13,20,0.85);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(8px);
+}
+
+.traits-title {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+
+/* SVG Radar */
+.radar-svg { width: 160px; height: 160px; }
+
+/* Recommendations */
+.rec-card-mini {
+  background: rgba(10,13,20,0.85);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+}
+.rec-mini-title {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.rec-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.rec-icon-sm { font-size: 16px; }
+.rec-info {}
+.rec-type-sm { font-size: 9px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+.rec-val-sm {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+/* ══ WORLD CUP LIVE ══ */
+.live-banner {
+  grid-column: 1 / 3;
+  background: rgba(255,90,30,0.05);
+  border: 1px solid rgba(255,90,30,0.2);
+  border-radius: 8px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 8px var(--orange);
+  flex-shrink: 0;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.5; transform:scale(0.8); }
+}
+
+.live-text {
+  font-size: 11px;
+  color: var(--orange);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-scores {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.live-match {
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 3px;
+  padding: 3px 8px;
+}
+.live-match strong { color: var(--white); }
+
+/* ══ ANIMATE ══ */
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+.left-panel  { animation: fadeIn 0.5s ease both; }
+.top-right   { animation: fadeIn 0.5s 0.1s ease both; }
+.mid-right   { animation: fadeIn 0.5s 0.2s ease both; }
+.bottom-right{ animation: fadeIn 0.5s 0.3s ease both; }
+.live-banner { animation: fadeIn 0.5s 0.4s ease both; }
+
+@media(max-width:800px){
+  .page { grid-template-columns: 1fr; }
+  .left-panel { grid-row: auto; }
+  .mid-right, .bottom-right { grid-template-columns: 1fr; }
+  .pred-cards-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="stadium-bg"></div>
+
+<div class="page">
+
+  <!-- ══ LIVE BANNER ══ -->
+  <div class="live-banner">
+    <div class="live-dot"></div>
+    <span class="live-text">⚽ Live — 2026 FIFA World Cup</span>
+    <div class="live-scores">
+      <div class="live-match"><strong>ARG</strong> 3–0 ALG</div>
+      <div class="live-match"><strong>FRA</strong> 2–0 SEN</div>
+      <div class="live-match"><strong>BRA</strong> 1–1 MAR</div>
+      <div class="live-match"><strong>GER</strong> 7–1 CUW</div>
+      <div class="live-match"><strong>USA</strong> 4–1 PAR</div>
+    </div>
+  </div>
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="left-panel">
+    <div class="day-badge">⚡ FOOTBALL INTELLIGENCE</div>
+
+    <div class="panel-title">Football Intelligence<br>Profile</div>
+    <div class="panel-subtitle">Data · Insights · Legacy</div>
+
+    <!-- Score ring -->
+    <div class="score-ring-wrap">
+      <div class="ring-container">
+        <svg class="ring-svg" viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="36"/>
+          <circle class="ring-fill" cx="45" cy="45" r="36"/>
+        </svg>
+        <div class="ring-num">
+          <span class="score-num">32</span>
+          <span class="score-denom">/ 100</span>
+        </div>
+      </div>
+      <div class="classification-block">
+        <div class="class-label">Classification</div>
+        <div class="class-name">Beginner Fan</div>
+        <div class="class-detail">1/4 quiz · 32 awareness</div>
+      </div>
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Personality Match -->
+    <div class="pm-label">Personality Match</div>
+
+    <div class="pm-row">
+      <div class="pm-name-row">
+        <span class="pm-name-messi">MESSI</span>
+        <span class="pm-pct-messi">81%</span>
+      </div>
+      <div class="pm-bar"><div class="pm-fill-messi"></div></div>
+      <div class="pm-tags">Quiet leader · Instinct-driven · Team-first</div>
+    </div>
+
+    <div class="pm-row">
+      <div class="pm-name-row">
+        <span class="pm-name-ronaldo">RONALDO</span>
+        <span class="pm-pct-ronaldo">52%</span>
+      </div>
+      <div class="pm-bar"><div class="pm-fill-ronaldo"></div></div>
+      <div class="pm-tags">Big-moment hunger · Best-is-ahead belief</div>
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Archetype -->
+    <div class="archetype-section">
+      <div class="arch-label">Football Personality Archetype</div>
+      <div class="arch-badge">
+        <div class="arch-name">🎨 Creative Playmaker</div>
+        <div class="arch-desc">Mirrors Messi — team-first, process over ego, peaks when creative freedom is given.</div>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      Study the game · Understand the game · <span>Elevate the game</span>
+    </div>
+  </div>
+
+  <!-- ══ TOP RIGHT: PREDICTIONS ══ -->
+  <div class="top-right">
+    <div class="prediction-header">
+      <div class="pred-section-label">⚽ World Cup 2026 — Prediction Report</div>
+      <div class="pred-title">TOURNAMENT FORECAST &nbsp;·&nbsp; AS OF JUNE 17, 2026</div>
+      <div class="pred-cards-row">
+        <div class="pred-mini winner">
+          <div class="pred-mini-medal">🥇</div>
+          <div class="pred-mini-tag">Predicted Winner</div>
+          <div class="pred-mini-team gold">Argentina</div>
+          <div class="conf-row"><span>Confidence</span><span>72%</span></div>
+          <div class="mini-bar"><div class="mini-fill-gold" style="width:72%"></div></div>
+          <div class="pred-mini-note">#1 FIFA rank · Form 92/100 · Messi rated 96 · Won 3–0 vs Algeria in opener</div>
+        </div>
+        <div class="pred-mini runner">
+          <div class="pred-mini-medal">🥈</div>
+          <div class="pred-mini-tag">Runner-Up</div>
+          <div class="pred-mini-team silver">France</div>
+          <div class="conf-row"><span>Confidence</span><span>65%</span></div>
+          <div class="mini-bar"><div class="mini-fill-silver" style="width:65%"></div></div>
+          <div class="pred-mini-note">#3 FIFA rank · Form 90/100 · Mbappé top scorer 22G · Beat Senegal 2–0</div>
+        </div>
+        <div class="pred-mini dark">
+          <div class="pred-mini-medal">🌟</div>
+          <div class="pred-mini-tag">Dark Horse</div>
+          <div class="pred-mini-team green">Morocco</div>
+          <div class="conf-row"><span>Confidence</span><span>38%</span></div>
+          <div class="mini-bar"><div class="mini-fill-green" style="width:38%"></div></div>
+          <div class="pred-mini-note">2022 semi-finalists · Form 86/100 · Held Brazil 1–1 in opener</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MID RIGHT: Charts ══ -->
+  <div class="mid-right">
+    <!-- Line chart — historical win % -->
+    <div class="chart-card">
+      <div class="chart-card-title">Performance Overview</div>
+      <div class="chart-card-sub" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Top Teams · Win Rate (50 matches)</span>
+        <span style="font-size:10px;color:var(--muted);">Based on workbook data</span>
+      </div>
+      <svg class="line-chart" viewBox="0 0 280 80" preserveAspectRatio="none">
+        <!-- Grid lines -->
+        <line x1="0" y1="10" x2="280" y2="10" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="0" y1="30" x2="280" y2="30" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="0" y1="50" x2="280" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="0" y1="70" x2="280" y2="70" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <!-- Labels y -->
+        <text x="2" y="12" fill="rgba(255,255,255,0.2)" font-size="7">70%</text>
+        <text x="2" y="32" fill="rgba(255,255,255,0.2)" font-size="7">60%</text>
+        <text x="2" y="52" fill="rgba(255,255,255,0.2)" font-size="7">50%</text>
+        <!-- Bars: Brazil 70, Argentina 68, France 62, England 58, Spain 60, Germany 56, Portugal 54, Neth 58, Croatia 48, Morocco 44 -->
+        <!-- X positions: 30,60,90,110,140,165,190,215,240,260 -->
+        <rect x="28"  y="10" width="14" height="70" fill="rgba(46,204,113,0.15)" rx="1"/>
+        <rect x="28"  y="12" width="14" height="58" fill="url(#barGrad)" rx="1"/>
+
+        <rect x="58"  y="12" width="14" height="56" fill="url(#barGrad)" rx="1"/>
+        <rect x="88"  y="18" width="14" height="50" fill="url(#barGrad)" rx="1"/>
+        <rect x="118" y="22" width="14" height="46" fill="url(#barGrad)" rx="1"/>
+        <rect x="148" y="20" width="14" height="48" fill="url(#barGrad)" rx="1"/>
+        <rect x="178" y="24" width="14" height="44" fill="url(#barGrad)" rx="1"/>
+        <rect x="208" y="26" width="14" height="42" fill="url(#barGrad)" rx="1"/>
+        <rect x="232" y="22" width="14" height="46" fill="url(#barGrad)" rx="1"/>
+        <rect x="252" y="32" width="14" height="36" fill="url(#barGrad)" rx="1"/>
+
+        <!-- Top team labels -->
+        <text x="35"  y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">BRA</text>
+        <text x="65"  y="78" fill="rgba(255,200,66,0.6)"  font-size="6" text-anchor="middle">ARG</text>
+        <text x="95"  y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">FRA</text>
+        <text x="125" y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">ENG</text>
+        <text x="155" y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">ESP</text>
+        <text x="185" y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">GER</text>
+        <text x="215" y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">POR</text>
+        <text x="239" y="78" fill="rgba(255,255,255,0.3)" font-size="6" text-anchor="middle">NED</text>
+        <text x="259" y="78" fill="rgba(46,204,113,0.5)"  font-size="6" text-anchor="middle">MAR</text>
+
+        <!-- Orange highlight line over ARG bar -->
+        <rect x="58" y="12" width="14" height="56" fill="none" stroke="var(--orange)" stroke-width="1" rx="1" opacity="0.6"/>
+
+        <defs>
+          <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ff5a1e" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="#ff3d00" stop-opacity="0.15"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Awareness ring -->
+    <div class="awareness-card">
+      <div class="chart-card-title" style="margin-bottom:12px;align-self:flex-start;">Football Awareness Score</div>
+      <div class="aware-ring-container">
+        <svg class="aware-ring-svg" viewBox="0 0 100 100">
+          <circle class="aware-bg" cx="50" cy="50" r="40"/>
+          <circle class="aware-fill" cx="50" cy="50" r="40"/>
+        </svg>
+        <div class="aware-text">
+          <div class="aware-num">32</div>
+          <div class="aware-label">Awareness<br>Score</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;text-align:center;">
+        <div style="font-size:9px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Classification</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--orange);">🌱 Beginner Fan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BOTTOM RIGHT ══ -->
+  <div class="bottom-right">
+
+    <!-- Messi strengths -->
+    <div class="strength-card">
+      <div class="strength-header messi-h">Messi Shared Strengths</div>
+      <div class="strength-item">
+        <span class="strength-arrow-messi">▶</span>
+        <span>Quiet, instinct-led leadership</span>
+      </div>
+      <div class="strength-item">
+        <span class="strength-arrow-messi">▶</span>
+        <span>Process over ego — mastery focus</span>
+      </div>
+      <div class="strength-item">
+        <span class="strength-arrow-messi">▶</span>
+        <span>Team before self — collaborative</span>
+      </div>
+      <div class="strength-item">
+        <span class="strength-arrow-messi">▶</span>
+        <span>Creative freedom seeker</span>
+      </div>
+      <div class="strength-item">
+        <span class="strength-arrow-messi">▶</span>
+        <span>Reflects &amp; returns stronger</span>
+      </div>
+    </div>
+
+    <!-- Ronaldo shared strengths -->
+    <div class="strength-card">
+      <div class="strength-header ronaldo-h">Ronaldo Shared Strengths</div>
+      <div class="strength-item">
+        <span class="strength-arrow-ronaldo">▶</span>
+        <span>Big-moment performer</span>
+      </div>
+      <div class="strength-item">
+        <span class="strength-arrow-ronaldo">▶</span>
+        <span>Disciplined under pressure</span>
+      </div>
+      <div class="strength-item">
+        <span class="strength-arrow-ronaldo">▶</span>
+        <span>Best-is-ahead belief</span>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="font-size:9px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Recommendations</div>
+        <div class="rec-row">
+          <span class="rec-icon-sm">⭐</span>
+          <div class="rec-info">
+            <div class="rec-type-sm">Player</div>
+            <div class="rec-val-sm">Lamine Yamal</div>
+          </div>
+        </div>
+        <div class="rec-row">
+          <span class="rec-icon-sm">🏟️</span>
+          <div class="rec-info">
+            <div class="rec-type-sm">Club</div>
+            <div class="rec-val-sm">FC Barcelona</div>
+          </div>
+        </div>
+        <div class="rec-row">
+          <span class="rec-icon-sm">🌍</span>
+          <div class="rec-info">
+            <div class="rec-type-sm">National Team</div>
+            <div class="rec-val-sm">Argentina</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personality radar -->
+    <div class="traits-card">
+      <div class="traits-title">Personality Traits</div>
+      <svg class="radar-svg" viewBox="0 0 160 160">
+        <!-- Background rings -->
+        <polygon points="80,30 116,52 116,96 80,118 44,96 44,52" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <polygon points="80,42 108,58 108,90 80,106 52,90 52,58" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <polygon points="80,54 100,64 100,84 80,94 60,84 60,64" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <polygon points="80,66 92,72 92,78 80,84 68,78 68,72" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+        <!-- Axes -->
+        <line x1="80" y1="30" x2="80" y2="118" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="44" y1="52" x2="116" y2="96" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="116" y1="52" x2="44" y2="96" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+        <!-- Data polygon: Creativity 5/5, Teamwork 5/5, Leadership 4/5, Ambition 3/5, WorkEthic 4/5 -->
+        <!-- Mapped to radar coords (5=outer ring) -->
+        <!-- TOP: Creativity → 80,30 at full. 4/5=42, 3/5=54 -->
+        <!-- TR: Teamwork → 116,52 -->
+        <!-- BR: Big Moments/Risk → 116,96 scaled -->
+        <!-- BOT: Work Ethic → 80,118 scaled -->
+        <!-- BL: Ambition → 44,96 scaled -->
+        <!-- TL: Leadership → 44,52 -->
+
+        <!-- Creativity 5→top full=30 -->
+        <!-- Teamwork 5→TR full=116,52 -->
+        <!-- Leadership 4→TL 4/5=52+(96-52)*0.8=87? Let me map manually -->
+        <!-- Creative=5: 80,30. Team=5:116,52. Leadership=4:57,59. Ambition=3:80,94. WorkEthic=4:103,88 -->
+        <polygon
+          points="80,30  116,52  103,88  80,94  57,59"
+          fill="rgba(255,90,30,0.25)"
+          stroke="var(--orange)"
+          stroke-width="1.5"
+        />
+
+        <!-- Dot markers -->
+        <circle cx="80"  cy="30"  r="3" fill="var(--orange)"/>
+        <circle cx="116" cy="52"  r="3" fill="var(--orange)"/>
+        <circle cx="103" cy="88"  r="3" fill="var(--orange)"/>
+        <circle cx="80"  cy="94"  r="3" fill="var(--orange)"/>
+        <circle cx="57"  cy="59"  r="3" fill="var(--orange)"/>
+
+        <!-- Labels -->
+        <text x="80"  y="22"  text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="8">CREATIVITY</text>
+        <text x="80"  y="21"  text-anchor="middle" fill="var(--orange)" font-size="7" dy="8">5/5</text>
+        <text x="126" y="52"  text-anchor="start"  fill="rgba(255,255,255,0.4)" font-size="8">TEAMWORK</text>
+        <text x="126" y="60"  text-anchor="start"  fill="var(--orange)" font-size="7">5/5</text>
+        <text x="116" y="100" text-anchor="start"  fill="rgba(255,255,255,0.4)" font-size="8">WORK</text>
+        <text x="116" y="109" text-anchor="start"  fill="rgba(255,255,255,0.4)" font-size="8">ETHIC</text>
+        <text x="116" y="118" text-anchor="start"  fill="var(--orange)" font-size="7">4/5</text>
+        <text x="80"  y="130" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8">AMBITION</text>
+        <text x="80"  y="138" text-anchor="middle" fill="var(--orange)" font-size="7">3/5</text>
+        <text x="34"  y="52"  text-anchor="end"    fill="rgba(255,255,255,0.4)" font-size="8">LEADERSHIP</text>
+        <text x="34"  y="61"  text-anchor="end"    fill="var(--orange)" font-size="7">4/5</text>
+      </svg>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
