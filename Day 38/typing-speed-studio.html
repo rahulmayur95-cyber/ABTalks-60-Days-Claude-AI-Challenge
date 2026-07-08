@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Speed Studio — Academic Edition</title>
+<style>
+:root{
+  --ink:#1B2A41;
+  --ink-2:#233650;
+  --parchment:#F3EEE3;
+  --parchment-2:#EAE2D0;
+  --gold:#B08D57;
+  --gold-light:#C9A876;
+  --crimson:#8C3A3A;
+  --sage:#5F8566;
+  --charcoal:#2A2620;
+  --muted:#8A8371;
+  --line:#D8CDB5;
+  --shadow: 0 8px 30px rgba(27,42,65,0.12);
+  --radius: 3px;
+  --serif: "Iowan Old Style","Palatino Linotype","Source Serif Pro", Georgia, "Times New Roman", serif;
+  --sans: "Inter","Segoe UI",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+  --mono: "JetBrains Mono","Fira Code","SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --font-scale: 1;
+}
+[data-theme="dark"]{
+  --ink:#EDE6D6;
+  --ink-2:#F3EEE3;
+  --parchment:#14181F;
+  --parchment-2:#1B2129;
+  --gold:#C9A876;
+  --gold-light:#DDBE8E;
+  --crimson:#E08585;
+  --sage:#8FC79B;
+  --charcoal:#E8E2D4;
+  --muted:#8B8C90;
+  --line:#2C333E;
+  --shadow: 0 8px 30px rgba(0,0,0,0.45);
+}
+[data-theme="sepia"]{
+  --ink:#3B2E1E;
+  --parchment:#EFE3CA;
+  --parchment-2:#E6D6B2;
+  --gold:#8C6B2E;
+  --gold-light:#A8853F;
+  --crimson:#9A3B2E;
+  --sage:#54724A;
+  --charcoal:#3B2E1E;
+  --muted:#7A6A4C;
+  --line:#D2BE8E;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background: var(--parchment);
+  color: var(--charcoal);
+  font-family: var(--sans);
+  min-height:100vh;
+  transition: background .4s ease, color .4s ease;
+  font-size: calc(16px * var(--font-scale));
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(176,141,87,0.05) 28px);
+  pointer-events:none;
+  z-index:0;
+}
+.wrap{max-width:1180px; margin:0 auto; padding: 28px 24px 80px; position:relative; z-index:1;}
+
+/* Masthead */
+.masthead{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 14px; margin-bottom: 22px;
+  flex-wrap:wrap; gap:14px;
+}
+.brand{display:flex; align-items:baseline; gap:12px;}
+.brand .mark{
+  font-family: var(--serif); font-weight:700; font-size: 2.1rem; letter-spacing:.5px; color:var(--ink);
+}
+.brand .sub{
+  font-family: var(--serif); font-style:italic; color:var(--muted); font-size:.95rem;
+}
+.masthead-right{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.icon-btn{
+  background:transparent; border:1px solid var(--line); color:var(--ink);
+  width:38px; height:38px; border-radius:50%; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:15px;
+  transition: all .2s ease;
+}
+.icon-btn:hover{ background:var(--ink); color:var(--parchment); border-color:var(--ink); transform: translateY(-1px);}
+.icon-btn.active{ background:var(--gold); border-color:var(--gold); color:#fff;}
+
+/* Tabs / Mode selection */
+.control-panel{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  margin-bottom: 18px;
+}
+.mode-row{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{
+  font-family: var(--sans); font-size:.78rem; font-weight:600; letter-spacing:.03em; text-transform:uppercase;
+  padding:8px 14px; border-radius: 999px; border:1px solid var(--line); background: var(--parchment-2);
+  color:var(--muted); cursor:pointer; transition: all .18s ease; white-space:nowrap;
+}
+.chip:hover{ border-color:var(--gold); color:var(--ink); }
+.chip.selected{ background:var(--ink); color:var(--parchment); border-color:var(--ink); }
+.subrow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.subrow.hidden{ display:none; }
+
+.select-field{
+  font-family:var(--sans); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.03em;
+  padding:8px 12px; border-radius: 999px; border:1px solid var(--line); background:var(--parchment-2); color:var(--ink);
+  cursor:pointer;
+}
+
+/* Typing stage */
+.stage{
+  background: var(--parchment-2);
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 34px 38px;
+  position:relative;
+  overflow:hidden;
+  min-height: 220px;
+}
+.stage::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--gold);
+}
+.live-stats{
+  display:flex; gap:28px; flex-wrap:wrap; margin-bottom: 20px; font-family:var(--mono);
+}
+.live-stats .stat{ display:flex; flex-direction:column; gap:2px; min-width:64px;}
+.live-stats .stat .val{ font-size:1.5rem; font-weight:700; color:var(--ink); font-variant-numeric: tabular-nums;}
+.live-stats .stat .lab{ font-size:.62rem; letter-spacing:.09em; text-transform:uppercase; color:var(--muted);}
+.progress-track{
+  height:3px; background:var(--line); border-radius:2px; margin-bottom:26px; overflow:hidden;
+}
+.progress-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--gold), var(--sage)); transition: width .25s ease; }
+
+.text-display{
+  font-family: var(--mono);
+  font-size: calc(1.35rem * var(--font-scale));
+  line-height: 2.05;
+  letter-spacing: .3px;
+  color: var(--muted);
+  user-select:none;
+  position:relative;
+  max-height: 210px;
+  overflow:hidden;
+  transition: max-height .3s ease;
+}
+.text-display.focus-mode .line{ display:none; }
+.text-display.focus-mode .line.active-line{ display:block; }
+.text-display.zen-mode{ max-height:none; }
+.char{ position:relative; }
+.char.correct{ color: var(--charcoal); }
+.char.incorrect{ color: var(--crimson); background: rgba(140,58,58,0.12); border-radius:2px; }
+.char.extra{ color: var(--crimson); text-decoration: underline wavy; }
+.char.current{ color: var(--charcoal); }
+.char.current::after{
+  content:""; position:absolute; left:-1px; top:2px; bottom:2px; width:2px; background: var(--gold);
+  animation: caretBlink 1s steps(1) infinite;
+}
+@keyframes caretBlink{ 50%{opacity:0;} }
+
+.hidden-input{
+  position:absolute; opacity:0; pointer-events:none; height:0; width:0;
+}
+.stage-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:22px; flex-wrap:wrap; gap:12px;}
+.hint{ font-size:.78rem; color:var(--muted); font-style:italic; font-family:var(--serif); }
+.action-row{ display:flex; gap:10px; }
+.btn{
+  font-family: var(--sans); font-weight:600; font-size:.82rem; letter-spacing:.02em;
+  padding:9px 18px; border-radius: var(--radius); border:1px solid var(--ink); background:var(--ink); color:var(--parchment);
+  cursor:pointer; transition: all .18s ease;
+}
+.btn:hover{ transform: translateY(-1px); box-shadow: 0 4px 14px rgba(27,42,65,0.25); }
+.btn.secondary{ background:transparent; color:var(--ink); }
+.btn.gold{ background:var(--gold); border-color:var(--gold); color:#fff; }
+
+.overlay-msg{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;
+  background: rgba(243,238,227,0.92); backdrop-filter: blur(2px); z-index:5; text-align:center; padding:20px;
+}
+[data-theme="dark"] .overlay-msg{ background: rgba(20,24,31,0.92); }
+.overlay-msg h3{ font-family:var(--serif); font-size:1.4rem; color:var(--ink); }
+.overlay-msg p{ color:var(--muted); font-size:.9rem; max-width:360px; }
+.overlay-msg.hidden{ display:none; }
+
+/* Dashboard */
+.dashboard{ margin-top:30px; display:none; }
+.dashboard.show{ display:block; animation: fadeUp .5s ease; }
+@keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+.dash-header{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+.dash-header h2{ font-family:var(--serif); font-size:1.6rem; color:var(--ink); }
+.dash-header .tag{ color:var(--muted); font-style:italic; font-family:var(--serif); font-size:.9rem;}
+
+.grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:18px;}
+.metric-card{
+  background:var(--parchment-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;
+  transition: transform .2s ease;
+}
+.metric-card:hover{ transform: translateY(-2px); }
+.metric-card .m-val{ font-family:var(--mono); font-size:1.7rem; font-weight:700; color:var(--ink); }
+.metric-card .m-lab{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-top:4px;}
+.metric-card.accent{ border-color: var(--gold); }
+.metric-card.accent .m-val{ color:var(--gold); }
+
+.panels{ display:grid; grid-template-columns: 1.3fr 1fr; gap:16px; margin-bottom:18px;}
+@media (max-width: 860px){ .panels{ grid-template-columns:1fr; } }
+.panel{ background:var(--parchment-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px; }
+.panel h4{ font-family:var(--serif); font-size:1rem; margin-bottom:12px; color:var(--ink); }
+
+.char-breakdown{ display:flex; gap:14px; flex-wrap:wrap; }
+.char-breakdown .cb{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.85rem;}
+.cb .dot{ width:9px; height:9px; border-radius:50%; }
+
+.heatmap{ display:flex; flex-wrap:wrap; gap:6px; }
+.heat-key{
+  font-family:var(--mono); font-size:.75rem; padding:5px 8px; border-radius:3px; color:#fff; min-width:26px; text-align:center;
+}
+.badges{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+.badge{
+  font-size:.72rem; font-weight:600; padding:6px 12px; border-radius:999px; background:var(--ink); color:var(--parchment);
+  display:flex; align-items:center; gap:6px;
+}
+.badge.locked{ background:transparent; border:1px dashed var(--line); color:var(--muted); }
+
+.summary-text{ font-family:var(--serif); font-size:.98rem; line-height:1.65; color:var(--charcoal); }
+.summary-text b{ color:var(--gold); }
+
+svg.chart{ width:100%; height:130px; display:block; }
+.history-list{ margin-top:8px; }
+.history-row{
+  display:grid; grid-template-columns: 90px 1fr 70px 70px 70px 90px; gap:10px; padding:10px 6px;
+  border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.8rem; align-items:center;
+}
+.history-row.header{ color:var(--muted); font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; font-family:var(--sans); font-weight:700;}
+@media (max-width:700px){ .history-row{ grid-template-columns: 70px 1fr 55px 55px; } .history-row span:nth-child(5), .history-row span:nth-child(6){ display:none;} }
+
+footer.credits{ text-align:center; margin-top:40px; color:var(--muted); font-family:var(--serif); font-style:italic; font-size:.82rem;}
+
+/* settings drawer */
+.drawer{
+  position:fixed; top:0; right:-360px; width:340px; height:100vh; background:var(--parchment);
+  border-left:1px solid var(--line); box-shadow:-8px 0 30px rgba(0,0,0,0.15); z-index:50; transition: right .3s ease;
+  padding:26px 22px; overflow-y:auto;
+}
+.drawer.open{ right:0; }
+.drawer h3{ font-family:var(--serif); font-size:1.2rem; margin-bottom:18px; color:var(--ink); }
+.drawer .field{ margin-bottom:20px; }
+.drawer label{ font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); display:block; margin-bottom:8px; font-weight:700;}
+.theme-swatches{ display:flex; gap:10px; }
+.swatch{ width:36px; height:36px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+.swatch.active{ border-color: var(--gold); }
+.font-controls{ display:flex; align-items:center; gap:10px; }
+.font-controls button{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:transparent; cursor:pointer; color:var(--ink);}
+.toggle-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.switch{ position:relative; width:42px; height:22px; }
+.switch input{ opacity:0; width:0; height:0; }
+.slider-tog{ position:absolute; cursor:pointer; inset:0; background:var(--line); border-radius:22px; transition:.2s; }
+.slider-tog::before{ content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+input:checked + .slider-tog{ background:var(--gold); }
+input:checked + .slider-tog::before{ transform: translateX(20px); }
+.backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:40; display:none; }
+.backdrop.show{ display:block; }
+.kbd-list{ font-size:.78rem; color:var(--muted); line-height:2; }
+.kbd-list kbd{ background:var(--parchment-2); border:1px solid var(--line); padding:1px 6px; border-radius:4px; font-family:var(--mono); color:var(--ink); }
+
+@media (max-width:640px){
+  .stage{ padding:22px 18px; }
+  .brand .mark{ font-size:1.5rem; }
+  .live-stats{ gap:16px; }
+}
+</style>
+</head>
+<body data-theme="parchment">
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brand">
+      <span class="mark">Typing Speed Studio</span>
+      <span class="sub">— an academic composition &amp; drill room</span>
+    </div>
+    <div class="masthead-right">
+      <button class="icon-btn" id="soundToggle" title="Toggle sound">♪</button>
+      <button class="icon-btn" id="pauseBtn" title="Pause (Esc)">❚❚</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <div class="control-panel">
+    <div class="mode-row" id="modeRow">
+      <div class="chip selected" data-mode="time">Time</div>
+      <div class="chip" data-mode="words">Words</div>
+      <div class="chip" data-mode="quote">Quote</div>
+      <div class="chip" data-mode="programming">Programming</div>
+      <div class="chip" data-mode="custom">Custom Text</div>
+      <div class="chip" data-mode="adaptive">Adaptive</div>
+    </div>
+    <div class="mode-row">
+      <select class="select-field" id="categorySelect">
+        <option value="academic" selected>Academic</option>
+        <option value="general">General English</option>
+        <option value="business">Business</option>
+        <option value="medical">Medical</option>
+        <option value="legal">Legal</option>
+        <option value="creative">Creative Writing</option>
+      </select>
+      <div class="chip" id="focusToggle" data-toggle="focus">Focus Mode</div>
+      <div class="chip" id="zenToggle" data-toggle="zen">Zen Mode</div>
+    </div>
+  </div>
+
+  <div class="subrow" id="timeOptions">
+    <div class="chip selected" data-time="15">15s</div>
+    <div class="chip" data-time="30">30s</div>
+    <div class="chip" data-time="60">60s</div>
+    <div class="chip" data-time="120">120s</div>
+  </div>
+  <div class="subrow hidden" id="wordOptions">
+    <div class="chip" data-words="25">25 words</div>
+    <div class="chip selected" data-words="50">50 words</div>
+    <div class="chip" data-words="100">100 words</div>
+    <div class="chip" data-words="250">250 words</div>
+  </div>
+  <div class="subrow hidden" id="progOptions">
+    <div class="chip selected" data-lang="javascript">JavaScript</div>
+    <div class="chip" data-lang="python">Python</div>
+    <div class="chip" data-lang="html">HTML</div>
+    <div class="chip" data-lang="css">CSS</div>
+    <div class="chip" data-lang="java">Java</div>
+    <div class="chip" data-lang="cpp">C++</div>
+    <div class="chip" data-lang="sql">SQL</div>
+  </div>
+  <div class="subrow hidden" id="customOptions">
+    <textarea id="customText" placeholder="Paste or type your own passage here, then press Start…" style="width:100%; min-height:80px; font-family:var(--mono); font-size:.9rem; padding:12px; border:1px solid var(--line); border-radius:var(--radius); background:var(--parchment-2); color:var(--charcoal);"></textarea>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="live-stats">
+      <div class="stat"><span class="val" id="statWpm">0</span><span class="lab">WPM</span></div>
+      <div class="stat"><span class="val" id="statRaw">0</span><span class="lab">Raw WPM</span></div>
+      <div class="stat"><span class="val" id="statCpm">0</span><span class="lab">CPM</span></div>
+      <div class="stat"><span class="val" id="statAcc">100%</span><span class="lab">Accuracy</span></div>
+      <div class="stat"><span class="val" id="statTime">0.0s</span><span class="lab">Elapsed</span></div>
+      <div class="stat"><span class="val" id="statMistakes">0</span><span class="lab">Mistakes</span></div>
+      <div class="stat"><span class="val" id="statStreak">0</span><span class="lab">Streak</span></div>
+      <div class="stat"><span class="val" id="statRemaining">15s</span><span class="lab">Remaining</span></div>
+      <div class="stat"><span class="val" id="statComplete">0%</span><span class="lab">Complete</span></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="text-display" id="textDisplay" tabindex="0"></div>
+    <textarea class="hidden-input" id="hiddenInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+
+    <div class="overlay-msg" id="pauseOverlay">
+      <h3>Paused</h3>
+      <p>Click resume or press Esc to continue your session. Elapsed time is held.</p>
+      <button class="btn gold" id="resumeBtn">Resume</button>
+    </div>
+
+    <div class="stage-footer">
+      <span class="hint">Click the passage and begin typing to start · Tab+Enter to restart · Esc to pause</span>
+      <div class="action-row">
+        <button class="btn secondary" id="newTextBtn">New Passage</button>
+        <button class="btn" id="restartBtn">Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard" id="dashboard">
+    <div class="dash-header">
+      <h2>Session Analysis</h2>
+      <span class="tag" id="dashTag">Reviewed like a scholar reviews a manuscript</span>
+    </div>
+
+    <div class="grid" id="metricsGrid"></div>
+
+    <div class="panels">
+      <div class="panel">
+        <h4>WPM over time</h4>
+        <svg class="chart" id="wpmChart"></svg>
+        <h4 style="margin-top:16px;">Accuracy over time</h4>
+        <svg class="chart" id="accChart"></svg>
+      </div>
+      <div class="panel">
+        <h4>Character Breakdown</h4>
+        <div class="char-breakdown" id="charBreakdown"></div>
+        <h4 style="margin-top:18px;">Error Heatmap (mistyped keys)</h4>
+        <div class="heatmap" id="heatmap"></div>
+        <h4 style="margin-top:18px;">Achievements</h4>
+        <div class="badges" id="badges"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:18px;">
+      <h4>Performance Summary</h4>
+      <p class="summary-text" id="summaryText"></p>
+    </div>
+
+    <div class="panel">
+      <h4>Session History &amp; Personal Bests</h4>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <footer class="credits">Typing Speed Studio · practice makes precision · your history stays on this device</footer>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<div class="drawer" id="drawer">
+  <h3>Settings</h3>
+  <div class="field">
+    <label>Theme</label>
+    <div class="theme-swatches">
+      <div class="swatch active" style="background:#F3EEE3; border-color:#B08D57;" data-theme="parchment" title="Parchment"></div>
+      <div class="swatch" style="background:#14181F;" data-theme="dark" title="Dark"></div>
+      <div class="swatch" style="background:#EFE3CA;" data-theme="sepia" title="Sepia"></div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Font Size</label>
+    <div class="font-controls">
+      <button id="fontDown">−</button>
+      <span id="fontVal">100%</span>
+      <button id="fontUp">+</button>
+    </div>
+  </div>
+  <div class="field">
+    <div class="toggle-row"><span>Sound Effects</span>
+      <label class="switch"><input type="checkbox" id="soundCheck"><span class="slider-tog"></span></label>
+    </div>
+    <div class="toggle-row"><span>Stop on Error</span>
+      <label class="switch"><input type="checkbox" id="stopOnErrorCheck"><span class="slider-tog"></span></label>
+    </div>
+  </div>
+  <div class="field">
+    <label>Keyboard Shortcuts</label>
+    <div class="kbd-list">
+      <div><kbd>Tab</kbd> + <kbd>Enter</kbd> — restart</div>
+      <div><kbd>Esc</kbd> — pause / resume</div>
+      <div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> — new passage</div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Data</label>
+    <button class="btn secondary" id="clearHistoryBtn" style="width:100%;">Clear Local History</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ CONTENT LIBRARIES ============ */
+const ACADEMIC_SENTENCES = [
+"The methodology employed in this study draws upon a mixed-methods framework combining quantitative surveys with qualitative interviews.",
+"Contemporary scholarship suggests that cognitive load theory offers a productive lens for redesigning instructional materials.",
+"The literature review revealed a persistent gap between theoretical models of motivation and their practical classroom application.",
+"Peer-reviewed research indicates that spaced repetition significantly improves long-term retention compared to massed practice.",
+"The hypothesis was tested using a randomized controlled trial with a sample size of two hundred and forty participants.",
+"Citations from primary sources strengthen the credibility of an argument far more than reliance on secondary commentary alone.",
+"The dissertation committee requested substantial revisions to the discussion section before granting final approval.",
+"Empirical evidence gathered across three independent laboratories corroborates the original findings of the pilot study.",
+"A rigorous statistical analysis using regression models was conducted to control for confounding demographic variables.",
+"The seminar explored epistemological questions concerning the nature of objectivity within the social sciences.",
+"Scholars continue to debate whether standardized testing accurately reflects a student's true academic potential.",
+"The abstract must concisely summarize the research question, methodology, key findings, and broader implications.",
+"Interdisciplinary collaboration between linguists and computer scientists has accelerated progress in natural language processing.",
+"The professor emphasized the importance of proper citation formatting according to the seventh edition of the style guide.",
+"Longitudinal studies tracking cohorts over a decade provide richer insight than isolated cross-sectional snapshots.",
+"The thesis argues that institutional policy reforms must be grounded in evidence-based educational research.",
+"Replication studies are essential for validating results and addressing concerns about the reproducibility crisis.",
+"The keynote lecture examined the intersection of neuroscience and pedagogy in shaping curriculum design.",
+"Ethical approval from the institutional review board is mandatory before any human subjects research can commence.",
+"The annotated bibliography synthesizes twelve scholarly articles published within the last five years."
+];
+
+const GENERAL_SENTENCES = [
+"The quick brown fox jumps over the lazy dog while the sun sets slowly behind the hills.",
+"She walked along the quiet beach collecting seashells as the waves gently rolled ashore.",
+"Every morning he brews a fresh pot of coffee and reads the newspaper on the porch.",
+"The children laughed and played in the park until the streetlights began to flicker on.",
+"A gentle breeze carried the scent of blooming flowers through the open kitchen window.",
+"They packed their bags and set off on a road trip across the countryside at dawn.",
+"The old library smelled of dust and paper, comforting anyone who wandered through its aisles.",
+"After the storm passed, a bright rainbow arched gracefully over the small fishing village.",
+"He practiced the piano every evening, hoping to master the piece before the recital.",
+"The chef carefully plated the dessert, adding a final dusting of powdered sugar on top."
+];
+
+const BUSINESS_SENTENCES = [
+"Please find attached the quarterly report outlining revenue growth and projected expenditures for the next fiscal year.",
+"Our stakeholders have requested a comprehensive review of the supply chain to identify potential cost efficiencies.",
+"The board of directors approved the proposed merger following months of due diligence and negotiation.",
+"We appreciate your continued partnership and look forward to expanding our collaboration in the coming quarter.",
+"The marketing team is finalizing the go-to-market strategy ahead of the product launch next month.",
+"Kindly confirm your availability for the stakeholder meeting scheduled for Thursday at ten o'clock.",
+"Our KPIs indicate a steady increase in customer retention following the rollout of the loyalty program.",
+"The procurement department is negotiating better terms with vendors to reduce operational overhead.",
+"Please circulate the revised agenda to all department heads prior to tomorrow's leadership summit.",
+"The annual performance review process will begin next week, with self-assessments due by Friday."
+];
+
+const MEDICAL_SENTENCES = [
+"The patient presented with acute abdominal pain accompanied by intermittent fever and mild tachycardia.",
+"A complete blood count was ordered to rule out infection prior to initiating antibiotic therapy.",
+"The physician recommended a course of physical therapy to improve range of motion in the shoulder joint.",
+"Elevated blood pressure readings over three consecutive visits prompted a referral to cardiology.",
+"The surgical team confirmed the appendectomy proceeded without complications and the patient is recovering well.",
+"Chronic hypertension increases the risk of cardiovascular disease and requires consistent monitoring.",
+"The nurse administered the prescribed dosage of medication and documented the patient's vital signs.",
+"Diagnostic imaging revealed a small fracture in the distal radius requiring immobilization with a cast.",
+"The oncologist discussed treatment options including chemotherapy, radiation, and targeted therapy.",
+"Postoperative care includes wound monitoring, pain management, and gradual reintroduction of mobility."
+];
+
+const LEGAL_SENTENCES = [
+"The plaintiff alleges breach of contract and seeks damages in excess of fifty thousand dollars.",
+"Pursuant to Section 12 of the agreement, either party may terminate with thirty days written notice.",
+"The defendant's counsel filed a motion to dismiss on the grounds of insufficient jurisdiction.",
+"This agreement shall be governed by and construed in accordance with the laws of the state.",
+"The court found that the evidence presented did not meet the burden of proof required for conviction.",
+"All parties hereby acknowledge and agree to the terms and conditions set forth in this contract.",
+"The witness testified under oath regarding the events that transpired on the night in question.",
+"Failure to comply with the aforementioned clauses may result in termination of the licensing agreement.",
+"The appellate court upheld the lower court's ruling, citing established precedent from prior case law.",
+"Confidential information disclosed during negotiations shall remain protected under the non-disclosure agreement."
+];
+
+const CREATIVE_SENTENCES = [
+"The lighthouse stood alone against the churning sea, its beam slicing through the fog like a blade of gold.",
+"She traced the edge of the letter with trembling fingers, unsure if she wanted to know what it said.",
+"Autumn arrived quietly that year, painting the maples in shades of rust before anyone noticed summer had left.",
+"In the attic, beneath a veil of dust, the old violin waited for a hand that remembered how to play.",
+"The city never truly slept; it simply exhaled, its neon breath rising into the indifferent midnight sky.",
+"He remembered her laughter the way sailors remember the stars, distant now but once a way to find home.",
+"The forest held its breath as the last light slipped between the trees like water through open fingers.",
+"Every letter she never sent was folded into the drawer, a paper garden of things left unsaid.",
+"The train pulled away, and with it went a version of himself he would never quite meet again.",
+"Rain fell over the harbor in long silver threads, stitching the sky to the restless surface of the sea."
+];
+
+const QUOTES = [
+"The only way to do great work is to love what you do. If you haven't found it yet, keep looking.",
+"In the middle of difficulty lies opportunity, and it is often disguised as hard work and patience.",
+"Whether you think you can or you think you can't, you're right, so choose your thoughts wisely.",
+"The future belongs to those who believe in the beauty of their dreams and act on them daily.",
+"It does not matter how slowly you go as long as you do not stop moving toward your goal.",
+"Success is not final, failure is not fatal; it is the courage to continue that truly counts.",
+"The journey of a thousand miles begins with a single step taken with intention and purpose.",
+"Simplicity is the ultimate sophistication, achieved only after mastering complexity and letting it go."
+];
+
+const CODE_SNIPPETS = {
+javascript: [
+"function debounce(fn, delay) {\n  let timer = null;\n  return function(...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), delay);\n  };\n}",
+"const fetchUser = async (id) => {\n  const res = await fetch(`/api/users/${id}`);\n  if (!res.ok) throw new Error('Failed to fetch user');\n  return res.json();\n};",
+"class EventEmitter {\n  constructor() { this.listeners = {}; }\n  on(event, cb) {\n    (this.listeners[event] ||= []).push(cb);\n  }\n  emit(event, ...args) {\n    (this.listeners[event] || []).forEach(cb => cb(...args));\n  }\n}"
+],
+python: [
+"def merge_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    mid = len(arr) // 2\n    left = merge_sort(arr[:mid])\n    right = merge_sort(arr[mid:])\n    return merge(left, right)",
+"class BankAccount:\n    def __init__(self, balance=0):\n        self.balance = balance\n\n    def deposit(self, amount):\n        if amount <= 0:\n            raise ValueError('Amount must be positive')\n        self.balance += amount",
+"import functools\n\n@functools.lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)"
+],
+html: [
+"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <header class=\"site-header\">\n    <nav>Home</nav>\n  </header>\n</body>\n</html>",
+"<form action=\"/submit\" method=\"POST\">\n  <label for=\"email\">Email</label>\n  <input type=\"email\" id=\"email\" name=\"email\" required>\n  <button type=\"submit\">Send</button>\n</form>"
+],
+css: [
+".card {\n  display: flex;\n  flex-direction: column;\n  padding: 1.5rem;\n  border-radius: 8px;\n  box-shadow: 0 4px 12px rgba(0,0,0,0.08);\n  transition: transform 0.2s ease;\n}\n.card:hover {\n  transform: translateY(-4px);\n}",
+"@media (max-width: 768px) {\n  .grid {\n    grid-template-columns: 1fr;\n    gap: 12px;\n  }\n  .nav-links {\n    display: none;\n  }\n}"
+],
+java: [
+"public class Stack<T> {\n    private List<T> items = new ArrayList<>();\n\n    public void push(T item) {\n        items.add(item);\n    }\n\n    public T pop() {\n        if (items.isEmpty()) throw new RuntimeException(\"Empty stack\");\n        return items.remove(items.size() - 1);\n    }\n}",
+"public interface Shape {\n    double area();\n    default String describe() {\n        return \"Shape with area \" + area();\n    }\n}"
+],
+cpp: [
+"class Vector3 {\npublic:\n    float x, y, z;\n    Vector3(float x, float y, float z) : x(x), y(y), z(z) {}\n    Vector3 operator+(const Vector3& o) const {\n        return Vector3(x + o.x, y + o.y, z + o.z);\n    }\n};",
+"#include <vector>\n#include <algorithm>\n\nint main() {\n    std::vector<int> nums = {5, 3, 8, 1};\n    std::sort(nums.begin(), nums.end());\n    return 0;\n}"
+],
+sql: [
+"SELECT customers.name, SUM(orders.total) AS lifetime_value\nFROM customers\nJOIN orders ON orders.customer_id = customers.id\nGROUP BY customers.name\nORDER BY lifetime_value DESC\nLIMIT 10;",
+"CREATE TABLE employees (\n  id SERIAL PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  department_id INTEGER REFERENCES departments(id),\n  hired_at DATE DEFAULT CURRENT_DATE\n);"
+]
+};
+
+const CATEGORY_POOLS = {
+  academic: ACADEMIC_SENTENCES,
+  general: GENERAL_SENTENCES,
+  business: BUSINESS_SENTENCES,
+  medical: MEDICAL_SENTENCES,
+  legal: LEGAL_SENTENCES,
+  creative: CREATIVE_SENTENCES
+};
+
+/* ============ STATE ============ */
+const state = {
+  mode: 'time',
+  category: 'academic',
+  timeLimit: 15,
+  wordLimit: 50,
+  lang: 'javascript',
+  focus: false,
+  zen: false,
+  running: false,
+  paused: false,
+  finished: false,
+  startTime: null,
+  pausedAccum: 0,
+  pauseStart: null,
+  targetText: '',
+  chars: [], // {char, status: 'pending'|'correct'|'incorrect'|'extra'}
+  typedCount: 0,
+  correctCount: 0,
+  incorrectCount: 0,
+  extraCount: 0,
+  missedCount: 0,
+  mistakeEvents: 0,
+  streak: 0,
+  bestStreak: 0,
+  wpmSnapshots: [], // {t, wpm, raw, acc}
+  keyErrors: {}, // key -> count
+  timerInterval: null,
+  soundOn: false,
+  stopOnError: false,
+  fontScale: 1,
+  adaptiveDifficulty: 1
+};
+
+const SETTINGS_KEY = 'tss_settings_v1';
+const HISTORY_KEY = 'tss_history_v1';
+const BESTS_KEY = 'tss_bests_v1';
+
+/* ============ DOM ============ */
+const $ = sel => document.querySelector(sel);
+const textDisplay = $('#textDisplay');
+const hiddenInput = $('#hiddenInput');
+const stage = $('#stage');
+const dashboard = $('#dashboard');
+const pauseOverlay = $('#pauseOverlay');
+
+/* ============ TEXT GENERATION ============ */
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function generateProseText(category, approxWordCount){
+  const pool = CATEGORY_POOLS[category] || ACADEMIC_SENTENCES;
+  const sentences = shuffle(pool);
+  let words = [];
+  let i = 0;
+  while(words.length < approxWordCount){
+    const s = sentences[i % sentences.length];
+    words = words.concat(s.split(' '));
+    i++;
+  }
+  return words.slice(0, approxWordCount).join(' ').replace(/[.,;:]$/,'') + '.';
+}
+
+function generateQuoteText(){
+  return QUOTES[Math.floor(Math.random()*QUOTES.length)];
+}
+
+function generateCodeText(lang){
+  const arr = CODE_SNIPPETS[lang] || CODE_SNIPPETS.javascript;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function wordCountFor(mode){
+  if(mode === 'words') return state.wordLimit;
+  if(mode === 'time') return Math.max(60, state.timeLimit * 3); // generous buffer
+  return 60;
+}
+
+function buildTargetText(){
+  let cat = state.category;
+  if(state.mode === 'adaptive'){
+    const cats = Object.keys(CATEGORY_POOLS);
+    cat = cats[Math.floor(Math.random()*cats.length)];
+    $('#categorySelect').value = cat in CATEGORY_POOLS ? cat : 'academic';
+  }
+  if(state.mode === 'programming'){
+    return generateCodeText(state.lang);
+  }
+  if(state.mode === 'quote'){
+    return generateQuoteText();
+  }
+  if(state.mode === 'custom'){
+    const t = $('#customText').value.trim();
+    return t.length > 0 ? t : generateProseText(cat, 40);
+  }
+  if(state.mode === 'adaptive'){
+    // adjust length/complexity slightly with adaptiveDifficulty
+    const base = 35 + Math.round(state.adaptiveDifficulty * 15);
+    return generateProseText(cat, Math.min(base, 80));
+  }
+  return generateProseText(cat, wordCountFor(state.mode));
+}
+
+/* ============ RENDERING ============ */
+function renderText(){
+  textDisplay.innerHTML = '';
+  textDisplay.classList.toggle('focus-mode', state.focus);
+  textDisplay.classList.toggle('zen-mode', state.zen);
+
+  const lines = state.targetText.split('\n');
+  let globalIndex = 0;
+  state.chars = [];
+
+  lines.forEach((lineStr, li) => {
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'line';
+    lineDiv.dataset.line = li;
+    const chars = (lineStr + (li < lines.length-1 ? '\n' : '')).split('');
+    chars.forEach(ch => {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = ch === '\n' ? '↵\n' : (ch === ' ' ? '\u00A0' : ch);
+      lineDiv.appendChild(span);
+      state.chars.push({ char: ch, el: span, status: 'pending', line: li });
+      globalIndex++;
+    });
+    textDisplay.appendChild(lineDiv);
+  });
+  updateActiveLine();
+  setCurrentCaret(0);
+}
+
+function updateActiveLine(){
+  if(!state.focus) return;
+  const lines = textDisplay.querySelectorAll('.line');
+  lines.forEach(l => l.classList.remove('active-line'));
+  const idx = state.typedCount < state.chars.length ? state.chars[state.typedCount].line : (state.chars.length? state.chars[state.chars.length-1].line : 0);
+  const activeLine = textDisplay.querySelector(`.line[data-line="${idx}"]`);
+  if(activeLine) activeLine.classList.add('active-line');
+}
+
+let currentCaretIdx = -1;
+function setCurrentCaret(idx){
+  if(currentCaretIdx >= 0 && state.chars[currentCaretIdx]) state.chars[currentCaretIdx].el.classList.remove('current');
+  currentCaretIdx = idx;
+  if(state.chars[idx]) state.chars[idx].el.classList.add('current');
+}
+
+/* ============ SESSION LOGIC ============ */
+function resetSession(newText){
+  clearInterval(state.timerInterval);
+  state.running = false;
+  state.paused = false;
+  state.finished = false;
+  state.startTime = null;
+  state.pausedAccum = 0;
+  state.typedCount = 0;
+  state.correctCount = 0;
+  state.incorrectCount = 0;
+  state.extraCount = 0;
+  state.missedCount = 0;
+  state.mistakeEvents = 0;
+  state.streak = 0;
+  state.wpmSnapshots = [];
+  state.keyErrors = {};
+  pauseOverlay.classList.add('hidden');
+  if(newText) state.targetText = buildTargetText();
+  renderText();
+  updateLiveStats();
+  hiddenInput.value = '';
+  updateProgress();
+  updateRemainingLabel();
+}
+
+function startSession(){
+  if(state.running) return;
+  state.running = true;
+  state.startTime = performance.now();
+  state.timerInterval = setInterval(tick, 100);
+}
+
+function tick(){
+  if(state.paused) return;
+  const elapsed = getElapsedSeconds();
+  updateLiveStats();
+  if(state.mode === 'time' && elapsed >= state.timeLimit){
+    finishSession();
+  }
+}
+
+function getElapsedSeconds(){
+  if(!state.startTime) return 0;
+  const now = performance.now();
+  return (now - state.startTime - state.pausedAccum) / 1000;
+}
+
+function currentWpmRaw(){
+  const elapsedMin = Math.max(getElapsedSeconds()/60, 1/600); // avoid div by 0
+  const correctChars = state.correctCount;
+  const totalTyped = state.correctCount + state.incorrectCount;
+  const wpm = Math.round((correctChars/5) / elapsedMin);
+  const raw = Math.round((totalTyped/5) / elapsedMin);
+  return { wpm: Math.max(0, Math.min(wpm, 400)), raw: Math.max(0, Math.min(raw, 400)) };
+}
+
+function updateLiveStats(){
+  const elapsed = getElapsedSeconds();
+  const { wpm, raw } = currentWpmRaw();
+  const totalTyped = state.correctCount + state.incorrectCount;
+  const acc = totalTyped > 0 ? Math.round((state.correctCount/totalTyped)*100) : 100;
+  const cpm = Math.round((state.correctCount) / Math.max(elapsed/60, 1/600));
+
+  $('#statWpm').textContent = wpm;
+  $('#statRaw').textContent = raw;
+  $('#statCpm').textContent = Math.max(0, Math.min(cpm,2000));
+  $('#statAcc').textContent = acc + '%';
+  $('#statTime').textContent = elapsed.toFixed(1) + 's';
+  $('#statMistakes').textContent = state.mistakeEvents;
+  $('#statStreak').textContent = state.streak;
+  updateProgress();
+  updateRemainingLabel();
+
+  if(state.running && !state.paused){
+    state.wpmSnapshots.push({ t: elapsed, wpm, raw, acc });
+  }
+}
+
+function updateProgress(){
+  let pct = 0;
+  if(state.mode === 'time'){
+    pct = Math.min(100, (getElapsedSeconds()/state.timeLimit)*100);
+  } else {
+    pct = state.chars.length ? Math.min(100, (state.typedCount/state.chars.length)*100) : 0;
+  }
+  $('#progressFill').style.width = pct + '%';
+  $('#statComplete').textContent = Math.round(pct) + '%';
+}
+
+function updateRemainingLabel(){
+  if(state.mode === 'time'){
+    const rem = Math.max(0, state.timeLimit - getElapsedSeconds());
+    $('#statRemaining').textContent = Math.ceil(rem) + 's';
+  } else {
+    const remWords = Math.max(0, Math.round((state.chars.length - state.typedCount)/5.5));
+    $('#statRemaining').textContent = remWords + 'w';
+  }
+}
+
+function playSound(type){
+  if(!state.soundOn) return;
+  try{
+    const ctx = playSound._ctx || (playSound._ctx = new (window.AudioContext||window.webkitAudioContext)());
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = type === 'error' ? 160 : (type === 'complete' ? 660 : 420);
+    gain.gain.value = 0.05;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+    osc.stop(ctx.currentTime + 0.09);
+  }catch(e){}
+}
+
+function handleInput(e){
+  if(state.finished) return;
+  if(!state.running) startSession();
+  if(state.paused) return;
+
+  const val = hiddenInput.value;
+  // We treat hiddenInput as append-only buffer; process last action via input event's data or compare lengths
+  processTyped(val);
+}
+
+let lastValue = '';
+function processTyped(val){
+  // Determine diff type: simplistic approach — compare to lastValue
+  if(val.length < lastValue.length){
+    // backspace
+    handleBackspace(lastValue.length - val.length);
+  } else if(val.length > lastValue.length){
+    const added = val.slice(lastValue.length);
+    for(const ch of added){
+      handleCharInput(ch);
+    }
+  }
+  lastValue = val;
+  hiddenInput.value = '';
+  lastValue = '';
+  updateLiveStats();
+  updateActiveLine();
+}
+
+function handleBackspace(count){
+  for(let i=0;i<count;i++){
+    if(state.typedCount <= 0) break;
+    state.typedCount--;
+    const c = state.chars[state.typedCount];
+    if(c.status === 'correct') state.correctCount--;
+    if(c.status === 'incorrect') state.incorrectCount--;
+    if(c.status === 'extra'){ state.extraCount--; }
+    c.status = 'pending';
+    c.el.className = 'char';
+  }
+  setCurrentCaret(state.typedCount);
+}
+
+function handleCharInput(ch){
+  if(state.typedCount >= state.chars.length){
+    // extra characters beyond target (only relevant if not auto-limited)
+    return;
+  }
+  const target = state.chars[state.typedCount];
+  const expected = target.char;
+  if(ch === expected || (expected === ' ' && ch === ' ')){
+    target.status = 'correct';
+    target.el.className = 'char correct';
+    state.correctCount++;
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+  } else {
+    target.status = 'incorrect';
+    target.el.className = 'char incorrect';
+    state.incorrectCount++;
+    state.mistakeEvents++;
+    state.streak = 0;
+    const key = expected === ' ' ? 'space' : expected;
+    state.keyErrors[key] = (state.keyErrors[key]||0) + 1;
+    playSound('error');
+    if(state.stopOnError){
+      // do not advance
+      target.status = 'pending';
+      target.el.className = 'char';
+      state.incorrectCount--; // revert count since we block advance
+      state.mistakeEvents--; // keep single count consistent
+      state.mistakeEvents++; // still log the attempt as mistake but don't advance below
+      return;
+    }
+  }
+  state.typedCount++;
+  setCurrentCaret(state.typedCount);
+
+  const doneByWords = (state.mode === 'words' || state.mode === 'quote' || state.mode === 'programming' || state.mode === 'custom') && state.typedCount >= state.chars.length;
+  const doneAdaptive = state.mode === 'adaptive' && state.typedCount >= state.chars.length;
+
+  if(doneByWords || doneAdaptive){
+    finishSession();
+  }
+}
+
+function finishSession(){
+  if(state.finished) return;
+  state.finished = true;
+  state.running = false;
+  clearInterval(state.timerInterval);
+  state.missedCount = state.chars.length - state.typedCount;
+
+  if(state.mode === 'adaptive'){
+    const { wpm } = currentWpmRaw();
+    const totalTyped = state.correctCount + state.incorrectCount;
+    const acc = totalTyped>0 ? state.correctCount/totalTyped : 1;
+    if(wpm > 60 && acc > 0.95) state.adaptiveDifficulty = Math.min(4, state.adaptiveDifficulty + 0.5);
+    else if(wpm < 30 || acc < 0.85) state.adaptiveDifficulty = Math.max(0, state.adaptiveDifficulty - 0.5);
+  }
+
+  playSound('complete');
+  buildDashboard();
+  saveSessionToHistory();
+}
+
+/* ============ PAUSE / RESUME ============ */
+function togglePause(){
+  if(!state.running || state.finished) return;
+  state.paused = !state.paused;
+  if(state.paused){
+    state.pauseStart = performance.now();
+    pauseOverlay.classList.remove('hidden');
+  } else {
+    state.pausedAccum += performance.now() - state.pauseStart;
+    pauseOverlay.classList.add('hidden');
+    hiddenInput.focus();
+  }
+}
+
+/* ============ DASHBOARD ============ */
+function computeConsistency(){
+  const snaps = state.wpmSnapshots;
+  if(snaps.length < 2) return 100;
+  const vals = snaps.map(s=>s.wpm);
+  const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
+  if(mean === 0) return 100;
+  const variance = vals.reduce((a,b)=>a+Math.pow(b-mean,2),0)/vals.length;
+  const stddev = Math.sqrt(variance);
+  const cv = stddev/mean;
+  return Math.max(0, Math.round(100 - cv*100));
+}
+
+function percentileEstimate(wpm){
+  // rough distribution approximation
+  const brackets = [ [20,10],[35,30],[50,50],[65,70],[80,85],[100,93],[130,98],[999,99.5] ];
+  for(const [thresh,pct] of brackets){ if(wpm <= thresh) return pct; }
+  return 99;
+}
+
+function loadBests(){
+  try{ return JSON.parse(localStorage.getItem(BESTS_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveBests(b){ localStorage.setItem(BESTS_KEY, JSON.stringify(b)); }
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }catch(e){ return []; }
+}
+function saveHistory(h){ localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(-50))); }
+
+function saveSessionToHistory(){
+  const { wpm, raw } = currentWpmRaw();
+  const totalTyped = state.correctCount + state.incorrectCount;
+  const acc = totalTyped>0 ? Math.round((state.correctCount/totalTyped)*100) : 100;
+  const session = {
+    date: new Date().toISOString(),
+    mode: state.mode,
+    category: state.category,
+    wpm, raw, acc,
+    consistency: computeConsistency(),
+    duration: Math.round(getElapsedSeconds()*10)/10,
+    mistakes: state.mistakeEvents
+  };
+  const hist = loadHistory();
+  hist.push(session);
+  saveHistory(hist);
+
+  const bests = loadBests();
+  const key = state.mode + '_' + (state.mode==='time'?state.timeLimit:state.mode==='words'?state.wordLimit:'x');
+  if(!bests[key] || wpm > bests[key].wpm){
+    bests[key] = { wpm, acc, date: session.date };
+  }
+  saveBests(bests);
+
+  renderHistory();
+}
+
+function svgLineChart(el, points, color, maxHint){
+  el.innerHTML = '';
+  if(points.length === 0){ return; }
+  const w = 500, h = 130, pad = 10;
+  const maxVal = Math.max(maxHint||1, ...points.map(p=>p));
+  const stepX = (w - pad*2) / Math.max(1, points.length-1);
+  let d = '';
+  points.forEach((v,i)=>{
+    const x = pad + i*stepX;
+    const y = h - pad - ((v/maxVal) * (h-pad*2));
+    d += (i===0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.classList.add('chart-inner');
+
+  const path = document.createElementNS(ns,'path');
+  path.setAttribute('d', d.trim());
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width','2.5');
+  path.setAttribute('stroke-linecap','round');
+  path.setAttribute('stroke-linejoin','round');
+  svg.appendChild(path);
+
+  // area fill
+  const areaD = d.trim() + ` L${(pad+(points.length-1)*stepX).toFixed(1)},${h-pad} L${pad},${h-pad} Z`;
+  const area = document.createElementNS(ns,'path');
+  area.setAttribute('d', areaD);
+  area.setAttribute('fill', color);
+  area.setAttribute('opacity','0.08');
+  svg.insertBefore(area, path);
+
+  el.replaceWith(svg);
+  svg.id = el.id;
+}
+
+function buildDashboard(){
+  const { wpm, raw } = currentWpmRaw();
+  const totalTyped = state.correctCount + state.incorrectCount;
+  const acc = totalTyped>0 ? Math.round((state.correctCount/totalTyped)*100) : 100;
+  const consistency = computeConsistency();
+  const completion = state.chars.length ? Math.round((state.typedCount/state.chars.length)*100) : 100;
+  const duration = getElapsedSeconds();
+  const percentile = percentileEstimate(wpm);
+
+  const metrics = [
+    { label:'WPM', val: wpm, accent:true },
+    { label:'Raw WPM', val: raw },
+    { label:'Accuracy', val: acc + '%' },
+    { label:'Consistency', val: consistency + '%' },
+    { label:'Completion', val: completion + '%' },
+    { label:'Duration', val: duration.toFixed(1) + 's' },
+    { label:'Mistakes', val: state.mistakeEvents },
+    { label:'Best Streak', val: state.bestStreak },
+    { label:'Percentile', val: '~' + percentile + 'th' }
+  ];
+  $('#metricsGrid').innerHTML = metrics.map(m=>`
+    <div class="metric-card ${m.accent?'accent':''}">
+      <div class="m-val">${m.val}</div>
+      <div class="m-lab">${m.label}</div>
+    </div>`).join('');
+
+  // char breakdown
+  const cb = [
+    { label:'Correct', val: state.correctCount, color:'var(--sage)' },
+    { label:'Incorrect', val: state.incorrectCount, color:'var(--crimson)' },
+    { label:'Extra', val: state.extraCount, color:'var(--gold)' },
+    { label:'Missed', val: Math.max(0,state.missedCount), color:'var(--muted)' }
+  ];
+  $('#charBreakdown').innerHTML = cb.map(c=>`
+    <div class="cb"><span class="dot" style="background:${c.color}"></span>${c.label}: ${c.val}</div>`).join('');
+
+  // heatmap
+  const entries = Object.entries(state.keyErrors).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  $('#heatmap').innerHTML = entries.length ? entries.map(([k,v])=>{
+    const intensity = Math.min(1, v/5);
+    const bg = `rgba(140,58,58,${0.35+intensity*0.5})`;
+    return `<span class="heat-key" style="background:${bg}">${k==='space'?'␣':k} ×${v}</span>`;
+  }).join('') : '<span style="color:var(--muted); font-size:.85rem;">No mistyped keys recorded — flawless run.</span>';
+
+  // charts
+  const wpmPoints = state.wpmSnapshots.map(s=>s.wpm);
+  const accPoints = state.wpmSnapshots.map(s=>s.acc);
+  svgLineChart(document.getElementById('wpmChart'), wpmPoints.length?wpmPoints:[wpm], getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()||'#B08D57', 100);
+  svgLineChart(document.getElementById('accChart'), accPoints.length?accPoints:[acc], getComputedStyle(document.documentElement).getPropertyValue('--sage').trim()||'#5F8566', 100);
+
+  // achievements
+  const bests = loadBests();
+  const hist = loadHistory();
+  const badgeDefs = [
+    { id:'first', label:'First Session', earned: hist.length>=0 },
+    { id:'fifty', label:'50+ WPM', earned: wpm>=50 },
+    { id:'eighty', label:'80+ WPM', earned: wpm>=80 },
+    { id:'hundred', label:'Century Club (100+ WPM)', earned: wpm>=100 },
+    { id:'accuracy', label:'98%+ Accuracy', earned: acc>=98 },
+    { id:'flawless', label:'Flawless Run', earned: state.mistakeEvents===0 },
+    { id:'marathon', label:'250-Word Marathon', earned: state.mode==='words' && state.wordLimit===250 },
+    { id:'consistent', label:'Highly Consistent', earned: consistency>=90 },
+    { id:'streak10', label:'10-Session Streak', earned: hist.length>=10 }
+  ];
+  $('#badges').innerHTML = badgeDefs.map(b=>`<span class="badge ${b.earned?'':'locked'}">${b.earned?'✓':'○'} ${b.label}</span>`).join('');
+
+  // summary text
+  const strengths = [];
+  const weaknesses = [];
+  if(acc>=97) strengths.push('excellent accuracy');
+  if(consistency>=85) strengths.push('a steady, consistent rhythm');
+  if(wpm>=70) strengths.push('above-average typing speed');
+  if(state.bestStreak>=40) strengths.push('strong sustained focus without errors');
+  if(strengths.length===0) strengths.push('a solid completed session — the foundation for faster gains');
+
+  if(acc<92) weaknesses.push('accuracy dipped below the level needed for reliable speed gains');
+  if(consistency<70) weaknesses.push('rhythm varied significantly, suggesting bursts followed by hesitation');
+  if(wpm<35) weaknesses.push('overall pace is still developing');
+  const topErrKeys = Object.entries(state.keyErrors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]==='space'?'the space bar':`"${e[0]}"`);
+  if(topErrKeys.length) weaknesses.push(`repeated mistakes around ${topErrKeys.join(', ')}`);
+  if(weaknesses.length===0) weaknesses.push('no notable weaknesses this round — a clean, controlled session');
+
+  const suggestion = acc<92
+    ? 'Slow down slightly and prioritize precision; speed will follow accuracy naturally.'
+    : (consistency<70
+      ? 'Try shorter, focused drills to smooth out rhythm before chasing higher WPM.'
+      : (wpm<50
+        ? 'Practice common letter combinations in short bursts to build muscle memory.'
+        : 'Introduce longer passages or Programming Mode to keep challenging your ceiling.'));
+
+  $('#summaryText').innerHTML = `This session showed <b>${strengths.join(', ')}</b>. Areas to refine include <b>${weaknesses.join('; ')}</b>. <br><br><b>Suggestion:</b> ${suggestion}`;
+
+  dashboard.classList.add('show');
+  renderHistory();
+  dashboard.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function renderHistory(){
+  const hist = loadHistory().slice().reverse().slice(0,12);
+  let html = `<div class="history-row header"><span>Date</span><span>Mode</span><span>WPM</span><span>Acc</span><span>Cons.</span><span>Mistakes</span></div>`;
+  html += hist.map(h=>{
+    const d = new Date(h.date);
+    const dateStr = d.toLocaleDateString(undefined,{month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    return `<div class="history-row"><span>${dateStr}</span><span>${h.category||''} · ${h.mode}</span><span>${h.wpm}</span><span>${h.acc}%</span><span>${h.consistency}%</span><span>${h.mistakes}</span></div>`;
+  }).join('');
+  if(hist.length===0) html += `<div style="padding:16px; color:var(--muted); font-family:var(--serif); font-style:italic;">No sessions recorded yet — complete a passage to begin your ledger.</div>`;
+  $('#historyList').innerHTML = html;
+}
+
+/* ============ UI WIRING ============ */
+function selectMode(mode){
+  state.mode = mode;
+  document.querySelectorAll('#modeRow .chip').forEach(c=>c.classList.toggle('selected', c.dataset.mode===mode));
+  $('#timeOptions').classList.toggle('hidden', mode!=='time');
+  $('#wordOptions').classList.toggle('hidden', mode!=='words');
+  $('#progOptions').classList.toggle('hidden', mode!=='programming');
+  $('#customOptions').classList.toggle('hidden', mode!=='custom');
+  dashboard.classList.remove('show');
+  resetSession(true);
+}
+
+document.querySelectorAll('#modeRow .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=> selectMode(chip.dataset.mode));
+});
+
+document.querySelectorAll('#timeOptions .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#timeOptions .chip').forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');
+    state.timeLimit = parseInt(chip.dataset.time,10);
+    resetSession(true);
+  });
+});
+document.querySelectorAll('#wordOptions .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#wordOptions .chip').forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');
+    state.wordLimit = parseInt(chip.dataset.words,10);
+    resetSession(true);
+  });
+});
+document.querySelectorAll('#progOptions .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#progOptions .chip').forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');
+    state.lang = chip.dataset.lang;
+    resetSession(true);
+  });
+});
+
+$('#categorySelect').addEventListener('change', e=>{
+  state.category = e.target.value;
+  resetSession(true);
+});
+
+$('#focusToggle').addEventListener('click', ()=>{
+  state.focus = !state.focus;
+  $('#focusToggle').classList.toggle('selected', state.focus);
+  renderText();
+});
+$('#zenToggle').addEventListener('click', ()=>{
+  state.zen = !state.zen;
+  $('#zenToggle').classList.toggle('selected', state.zen);
+  if(state.zen){ state.mode = 'zen-active'; } // internal marker only for display; timing behaves like untimed
+  textDisplay.classList.toggle('zen-mode', state.zen);
+});
+
+$('#newTextBtn').addEventListener('click', ()=> resetSession(true));
+$('#restartBtn').addEventListener('click', ()=> resetSession(false));
+$('#resumeBtn').addEventListener('click', togglePause);
+$('#pauseBtn').addEventListener('click', togglePause);
+
+textDisplay.addEventListener('click', ()=> hiddenInput.focus());
+stage.addEventListener('click', (e)=>{ if(!state.finished) hiddenInput.focus(); });
+hiddenInput.addEventListener('input', handleInput);
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){ e.preventDefault(); togglePause(); }
+  if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='n'){ e.preventDefault(); resetSession(true); }
+});
+let tabPressed = false;
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Tab'){ tabPressed = true; e.preventDefault(); }
+  if(e.key === 'Enter' && tabPressed){ resetSession(true); tabPressed=false; }
+});
+document.addEventListener('keyup', (e)=>{ if(e.key==='Tab') setTimeout(()=>tabPressed=false, 400); });
+
+/* ============ SETTINGS DRAWER ============ */
+const drawer = $('#drawer');
+const backdrop = $('#backdrop');
+$('#settingsBtn').addEventListener('click', ()=>{ drawer.classList.add('open'); backdrop.classList.add('show'); });
+backdrop.addEventListener('click', ()=>{ drawer.classList.remove('open'); backdrop.classList.remove('show'); });
+
+document.querySelectorAll('.swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    document.body.setAttribute('data-theme', sw.dataset.theme);
+    persistSettings();
+  });
+});
+
+$('#fontUp').addEventListener('click', ()=>{
+  state.fontScale = Math.min(1.5, Math.round((state.fontScale+0.1)*10)/10);
+  applyFontScale(); persistSettings();
+});
+$('#fontDown').addEventListener('click', ()=>{
+  state.fontScale = Math.max(0.7, Math.round((state.fontScale-0.1)*10)/10);
+  applyFontScale(); persistSettings();
+});
+function applyFontScale(){
+  document.documentElement.style.setProperty('--font-scale', state.fontScale);
+  $('#fontVal').textContent = Math.round(state.fontScale*100) + '%';
+}
+
+$('#soundCheck').addEventListener('change', e=>{ state.soundOn = e.target.checked; syncSoundIcon(); persistSettings(); });
+$('#soundToggle').addEventListener('click', ()=>{ state.soundOn = !state.soundOn; $('#soundCheck').checked = state.soundOn; syncSoundIcon(); persistSettings(); });
+function syncSoundIcon(){ $('#soundToggle').classList.toggle('active', state.soundOn); }
+
+$('#stopOnErrorCheck').addEventListener('change', e=>{ state.stopOnError = e.target.checked; persistSettings(); });
+
+$('#clearHistoryBtn').addEventListener('click', ()=>{
+  if(confirm('Clear all locally stored session history and personal bests? This cannot be undone.')){
+    localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(BESTS_KEY);
+    renderHistory();
+  }
+});
+
+function persistSettings(){
+  const settings = {
+    theme: document.body.getAttribute('data-theme'),
+    fontScale: state.fontScale,
+    soundOn: state.soundOn,
+    stopOnError: state.stopOnError,
+    category: state.category
+  };
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+function loadSettings(){
+  try{
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+    if(!s) return;
+    document.body.setAttribute('data-theme', s.theme||'parchment');
+    document.querySelectorAll('.swatch').forEach(sw=> sw.classList.toggle('active', sw.dataset.theme === s.theme));
+    state.fontScale = s.fontScale || 1;
+    applyFontScale();
+    state.soundOn = !!s.soundOn;
+    $('#soundCheck').checked = state.soundOn;
+    syncSoundIcon();
+    state.stopOnError = !!s.stopOnError;
+    $('#stopOnErrorCheck').checked = state.stopOnError;
+    if(s.category){ state.category = s.category; $('#categorySelect').value = s.category; }
+  }catch(e){}
+}
+
+/* ============ INIT ============ */
+function init(){
+  loadSettings();
+  applyFontScale();
+  resetSession(true);
+  renderHistory();
+  hiddenInput.focus();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
