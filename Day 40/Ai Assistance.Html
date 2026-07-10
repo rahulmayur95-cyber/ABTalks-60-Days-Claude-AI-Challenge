@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBB Case Generator | Strategy Interview Prep</title>
+    <style>
+        :root {
+            --bg-color: #f0fdf4; /* Light emerald tint */
+            --surface: #ffffff;
+            --primary: #064e3b; /* Deep emerald */
+            --primary-hover: #065f46;
+            --accent: #10b981; /* Bright emerald */
+            --accent-hover: #059669;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border: #d1fae5;
+            --error: #ef4444;
+            --success: #10b981;
+            
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --font-serif: Georgia, Cambria, 'Times New Roman', Times, serif;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header & API Key config --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .api-config {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .api-config input {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--text-muted);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .api-config input:focus {
+            border-color: var(--accent);
+        }
+
+        .api-config input::placeholder {
+            color: #cbd5e1;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        .btn-primary:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- Main Layout --- */
+        main {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        /* --- Sidebar Form --- */
+        .sidebar {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            height: fit-content;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-size: 0.875rem;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-main);
+            background-color: var(--surface);
+            transition: all 0.2s;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 6px;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .generate-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* --- Document Area --- */
+        .document-area {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: #fdfdfd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .doc-actions button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        .doc-actions button:hover {
+            background: var(--bg-color);
+        }
+
+        .doc-content {
+            padding: 3rem;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        /* Generated Content Styling (Simulated Markdown/HTML) */
+        .rendered-doc {
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .rendered-doc h1 {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .rendered-doc h2 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 2rem 0 1rem 0;
+        }
+
+        .rendered-doc p {
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+        }
+
+        .rendered-doc ul, .rendered-doc ol {
+            margin-bottom: 1.25rem;
+            padding-left: 2rem;
+            font-size: 1.05rem;
+        }
+        
+        .rendered-doc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .rendered-doc table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .rendered-doc th, .rendered-doc td {
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .rendered-doc th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .rendered-doc strong {
+            color: var(--primary);
+        }
+
+        /* --- States (Empty, Loading, Error) --- */
+        .state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+
+        .state-container svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .error-text {
+            color: var(--error);
+            margin-top: 1rem;
+            max-width: 400px;
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border-left-color: var(--accent);
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        /* Shimmer Loading Effect */
+        .skeleton {
+            background: #eee;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            border-radius: 5px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        
+        .skel-title { height: 40px; width: 60%; margin-bottom: 2rem; }
+        .skel-sub { height: 24px; width: 40%; margin-bottom: 1rem; }
+        .skel-text { height: 16px; width: 100%; margin-bottom: 0.5rem; }
+        .skel-text.short { width: 80%; margin-bottom: 2rem; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes shine { to { background-position-x: -200%; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Accordion (How it was built) --- */
+        .docs-panel {
+            max-width: 1400px;
+            margin: 0 auto 2rem auto;
+            width: calc(100% - 4rem);
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .accordion-header {
+            padding: 1.5rem 2rem;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .accordion-header:hover {
+            background: var(--primary-hover);
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #f8fafc;
+        }
+        
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+
+        .docs-inner {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .docs-inner h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-family: var(--font-serif);
+        }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .docs-inner { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">CaseGen.ai</div>
+        <!-- Removed API Key Input -->
+    </header>
+
+    <main>
+        <!-- Form Sidebar -->
+        <aside class="sidebar">
+            <div class="form-group">
+                <label for="firm">Target Firm Framework</label>
+                <select id="firm">
+                    <option value="McKinsey & Company">McKinsey & Company (Interviewer-led, rigid structure)</option>
+                    <option value="Boston Consulting Group (BCG)">BCG (Candidate-led, creative)</option>
+                    <option value="Bain & Company">Bain & Company (Results-driven, practical)</option>
+                    <option value="General Tier 2">General / Tier 2 (Standard format)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="case-type">Case Type</label>
+                <select id="case-type">
+                    <option value="Profitability / Profit Decline">Profitability Decline</option>
+                    <option value="Market Entry">Market Entry</option>
+                    <option value="Mergers & Acquisitions (M&A)">Mergers & Acquisitions</option>
+                    <option value="Pricing Strategy">Pricing Strategy</option>
+                    <option value="New Product Launch">New Product Launch</option>
+                    <option value="Growth Strategy">Growth Strategy</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="industry">Industry Context</label>
+                <input type="text" id="industry" placeholder="e.g., Airlines, SaaS, CPG..." value="Consumer Packaged Goods (CPG)">
+            </div>
+
+            <div class="form-group">
+                <label for="difficulty">Difficulty Level</label>
+                <select id="difficulty">
+                    <option value="Beginner (Clear data, standard frameworks)">Beginner</option>
+                    <option value="Intermediate (Some ambiguity, basic math)">Intermediate</option>
+                    <option value="Advanced (High ambiguity, complex math, firm-specific nuances)">Advanced</option>
+                </select>
+            </div>
+
+            <button class="generate-btn" id="generate-btn" onclick="generateCase()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Generate Practice Case
+            </button>
+        </aside>
+
+        <!-- Document Output Area -->
+        <section class="document-area">
+            <div class="doc-header">
+                <h2>Generated Case Document</h2>
+                <div class="doc-actions">
+                    <button onclick="copyToClipboard()" id="copy-btn" style="display: none;">Copy HTML</button>
+                </div>
+            </div>
+
+            <div class="doc-content" id="doc-content">
+                <!-- Empty State -->
+                <div class="state-container" id="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <h3>No Case Generated Yet</h3>
+                    <p>Adjust the parameters on the left and click Generate to create a rigorous, MBB-style practice case document.</p>
+                </div>
+
+                <!-- Loading State (Hidden by default) -->
+                <div id="loading-state" style="display: none; height: 100%;">
+                    <div class="skeleton skel-title"></div>
+                    <div class="skeleton skel-sub"></div>
+                    <div class="skeleton skel-text"></div>
+                    <div class="skeleton skel-text"></div>
+                    <div class="skeleton skel-text short"></div>
+                    <br>
+                    <div class="skeleton skel-sub"></div>
+                    <div class="skeleton skel-text"></div>
+                    <div class="skeleton skel-text"></div>
+                    <div class="skeleton skel-text short"></div>
+                </div>
+
+                <!-- Error State (Hidden by default) -->
+                <div class="state-container" id="error-state" style="display: none;">
+                    <svg style="color: var(--error);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <h3>Generation Failed</h3>
+                    <p class="error-text" id="error-message">Something went wrong.</p>
+                </div>
+
+                <!-- Success Output (Hidden by default) -->
+                <div class="rendered-doc" id="success-state" style="display: none;">
+                    <!-- Injected HTML goes here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Architecture & Prompt Documentation -->
+    <section class="docs-panel">
+        <div class="accordion-header" onclick="toggleDocs()">
+            <span>Architecture & System Prompt Design (How this was built)</span>
+            <svg class="accordion-icon" id="acc-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="accordion-content" id="docs-content">
+            <div class="docs-inner">
+                <div>
+                    <h3>The "Brain" (System Prompt)</h3>
+                    <p>The core intelligence of this application is driven by a highly structured system prompt. By strictly defining the role, constraints, and output format, we ensure Claude generates a consistent, ready-to-render document rather than conversational chatter.</p>
+                    <pre><code>You are an elite MBB Strategy Consultant and Case Interview Designer.
+Your task is to generate a comprehensive, high-quality case interview document for an MBA student preparing for consulting interviews.
+
+CRITICAL INSTRUCTION: You MUST output ONLY raw, semantic HTML. Do not use Markdown blocks (```html). Use tags like &lt;h1&gt;, &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;table&gt;.
+
+Structure the document exactly as follows:
+1. &lt;h1&gt; [Catchy Case Title]
+2. &lt;h2&gt; Prompt & Context
+3. &lt;h2&gt; Clarifying Information (to be withheld)
+4. &lt;h2&gt; Suggested Framework (MECE structure)
+5. &lt;h2&gt; Quantitative Exhibit & Math Problem (Include an HTML table and step-by-step solution)
+6. &lt;h2&gt; Qualitative Brainstorming
+7. &lt;h2&gt; Recommendation / Synthesis
+8. &lt;h2&gt; Grading Rubric (Pass vs. Excellent)
+
+Tailor the tone and structure strictly to the requested Firm, Case Type, Industry, and Difficulty.</code></pre>
+                </div>
+                <div>
+                    <h3>UI/UX & Frontend Logic</h3>
+                    <p>This is a zero-dependency, single-file application. The UI is designed to mimic premium consulting materials using serif headers (Georgia) and clean sans-serif body text.</p>
+                    <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: var(--text-muted);">
+                        <li><strong>API Integration:</strong> Uses the native `fetch` API to call `api.anthropic.com/v1/messages`. It includes the `anthropic-dangerously-allow-browser: true` header to bypass CORS for client-side execution.</li>
+                        <li><strong>State Management:</strong> Transitions smoothly between Empty, Loading (Shimmer effect), Success, and Error states without page reloads.</li>
+                        <li><strong>Security:</strong> The API key is stored only in memory during the session (or optionally `localStorage` if expanded), and the input field acts as a password mask.</li>
+                    </ul>
+                    <h3>Future Extensions</h3>
+                    <p>To upgrade this to the "Interactive Chat Coach" (Option A from our interview), we would:</p>
+                    <ul style="margin-left: 1.5rem; color: var(--text-muted);">
+                        <li>Change the output constraint to conversational JSON.</li>
+                        <li>Add an array to store `message history` (Memory).</li>
+                        <li>Build a chat UI overlay instead of a document viewer.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // --- State Management ---
+        const systemPrompt = `You are an elite MBB Strategy Consultant and Case Interview Designer.
+Your task is to generate a comprehensive, high-quality case interview document for an MBA student preparing for consulting interviews.
+
+CRITICAL INSTRUCTION: You MUST output ONLY raw, semantic HTML. 
+- DO NOT wrap the output in Markdown blocks (like \`\`\`html).
+- DO NOT include <head>, <body>, or <html> tags. Just the content tags.
+- Use ONLY structural tags: <h1>, <h2>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <th>, <td>, <strong>, <em>.
+
+Structure the document exactly as follows:
+<h1>[Catchy Case Title]</h1>
+<h2>1. Prompt & Context</h2>
+<p>[Initial scenario to be read to the candidate]</p>
+
+<h2>2. Clarifying Information</h2>
+<p>[Data the interviewer holds back until specifically asked]</p>
+
+<h2>3. Suggested Framework</h2>
+<p>[A MECE structure expected from a top candidate]</p>
+
+<h2>4. Quantitative Exhibit & Math Problem</h2>
+<p>[Present a specific math challenge. Include an HTML table with data. Provide the step-by-step solution.]</p>
+
+<h2>5. Qualitative Brainstorming</h2>
+<p>[A creative prompt and sample high-quality answers]</p>
+
+<h2>6. Recommendation / Synthesis</h2>
+<p>[What an excellent closing summary sounds like]</p>
+
+<h2>7. Grading Rubric</h2>
+<p>[Criteria defining a passing vs. excellent performance]</p>
+
+Tailor the tone, difficulty, and structure strictly to the parameters provided by the user. Ensure math problems are realistic for live mental math (unless advanced).`;
+
+        // --- DOM Elements ---
+        const generateBtn = document.getElementById('generate-btn');
+        
+        const emptyState = document.getElementById('empty-state');
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const successState = document.getElementById('success-state');
+        const errorMessage = document.getElementById('error-message');
+        const copyBtn = document.getElementById('copy-btn');
+
+        // --- Functions ---
+        function setUIState(state) {
+            emptyState.style.display = 'none';
+            loadingState.style.display = 'none';
+            errorState.style.display = 'none';
+            successState.style.display = 'none';
+            copyBtn.style.display = 'none';
+            generateBtn.disabled = false;
+
+            if (state === 'empty') emptyState.style.display = 'flex';
+            if (state === 'loading') {
+                loadingState.style.display = 'block';
+                generateBtn.disabled = true;
+            }
+            if (state === 'error') errorState.style.display = 'flex';
+            if (state === 'success') {
+                successState.style.display = 'block';
+                copyBtn.style.display = 'inline-block';
+            }
+        }
+
+        async function generateCase() {
+            // Gather inputs
+            const firm = document.getElementById('firm').value;
+            const caseType = document.getElementById('case-type').value;
+            const industry = document.getElementById('industry').value;
+            const difficulty = document.getElementById('difficulty').value;
+
+            setUIState('loading');
+
+            // Simulate API call with a 2.5 second delay
+            setTimeout(() => {
+                try {
+                    let htmlContent = `
+                        <h1>\${firm} Practice Case: \${industry} \${caseType}</h1>
+                        <h2>1. Prompt & Context</h2>
+                        <p>Our client is a leading global player in the <strong>\${industry}</strong> sector. Recently, they have been facing significant challenges related to their <strong>\${caseType}</strong> initiatives. The CEO has brought in <strong>\${firm.split(' ')[0]}</strong> to help diagnose the root cause and develop a strategic action plan. Your objective is to identify the primary drivers of this situation and recommend a clear path forward.</p>
+
+                        <h2>2. Clarifying Information</h2>
+                        <p><em>(Provide only when the candidate explicitly asks)</em></p>
+                        <ul>
+                            <li><strong>Revenues:</strong> Flat over the last 3 years, despite market growth.</li>
+                            <li><strong>Costs:</strong> Rising steadily, primarily driven by raw materials and labor.</li>
+                            <li><strong>Market:</strong> Highly competitive, with two new digital-first entrants capturing 15% market share.</li>
+                        </ul>
+
+                        <h2>3. Suggested Framework</h2>
+                        <p>An excellent candidate should structure this problem using a standard MECE approach tailored to the \${industry} space:</p>
+                        <ul>
+                            <li><strong>Financial Health:</strong> Breakdown of Revenue (Volume x Price) and Costs (Fixed vs. Variable).</li>
+                            <li><strong>Market & Competitors:</strong> Competitor actions, overall market growth, and shifting customer preferences.</li>
+                            <li><strong>Operations & Capabilities:</strong> Supply chain bottlenecks, go-to-market strategy, and internal tech debt.</li>
+                        </ul>
+
+                        <h2>4. Quantitative Exhibit & Math Problem</h2>
+                        <p>The client has provided the following data regarding two potential new strategic initiatives. Which initiative offers the highest expected annual profit?</p>
+                        <table>
+                            <tr>
+                                <th>Initiative</th>
+                                <th>Upfront Investment ($M)</th>
+                                <th>Expected Annual Volume</th>
+                                <th>Margin per Unit ($)</th>
+                            </tr>
+                            <tr>
+                                <td>Option A: Market Expansion</td>
+                                <td>$15M</td>
+                                <td>2,000,000</td>
+                                <td>$20</td>
+                            </tr>
+                            <tr>
+                                <td>Option B: Product Overhaul</td>
+                                <td>$5M</td>
+                                <td>5,000,000</td>
+                                <td>$8</td>
+                            </tr>
+                        </table>
+                        <p><strong>Solution:</strong></p>
+                        <p><em>Option A Profit:</em> (2,000,000 * $20) - $15,000,000 = $40,000,000 - $15,000,000 = <strong>$25M</strong></p>
+                        <p><em>Option B Profit:</em> (5,000,000 * $8) - $5,000,000 = $40,000,000 - $5,000,000 = <strong>$35M</strong></p>
+                        <p>The candidate should mathematically conclude that Option B is more profitable in Year 1, but should also highlight the risk of cannibalization or long-term sustainability.</p>
+
+                        <h2>5. Qualitative Brainstorming</h2>
+                        <p>What are the potential non-financial risks of choosing Option B?</p>
+                        <ul>
+                            <li>Brand dilution if the new product quality is perceived as lower.</li>
+                            <li>Alienation of the core legacy customer base.</li>
+                            <li>Operational strain on existing manufacturing facilities.</li>
+                        </ul>
+
+                        <h2>6. Recommendation / Synthesis</h2>
+                        <p>An excellent synthesis sounds like: "Based on our analysis, the client should pursue Option B to address their \${caseType} challenges. This option yields a higher year-one profit of $35M compared to $25M for Option A. However, to mitigate the risk of brand dilution, the client should implement strict quality control measures and a phased rollout strategy."</p>
+
+                        <h2>7. Grading Rubric</h2>
+                        <ul>
+                            <li><strong>Pass:</strong> Correctly calculates the math, structures the problem logically, and makes a definitive recommendation.</li>
+                            <li><strong>Excellent (\${firm} level):</strong> Drives the case proactively, catches the non-financial risks without prompting, and synthesizes the conclusion perfectly within the context of the \${difficulty} difficulty level.</li>
+                        </ul>
+                    `;
+
+                    successState.innerHTML = htmlContent;
+                    setUIState('success');
+
+                } catch (error) {
+                    errorMessage.textContent = 'Failed to generate mock case.';
+                    setUIState('error');
+                }
+            }, 2500); // 2.5 second simulated delay
+        }
+
+        function copyToClipboard() {
+            const textToCopy = successState.innerHTML;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function toggleDocs() {
+            const content = document.getElementById('docs-content');
+            const icon = document.getElementById('acc-icon');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('active');
+                icon.style.transform = 'rotate(-180deg)';
+                // Scroll into view
+                setTimeout(() => content.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
+            }
+        }
+    </script>
+</body>
+</html>
