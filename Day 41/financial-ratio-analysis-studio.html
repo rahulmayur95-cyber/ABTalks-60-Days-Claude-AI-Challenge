@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Ratio Analysis — Interactive Learning Studio</title>
+<style>
+  :root{
+    --bg:#0B1220;
+    --bg-alt:#0E1729;
+    --card:#121B2E;
+    --card-2:#16223A;
+    --line:#243352;
+    --ink:#E7ECF5;
+    --ink-dim:#9AA6BE;
+    --ink-faint:#6B7794;
+    --emerald:#2FD9A8;
+    --emerald-dim:#1B8F6C;
+    --amber:#E8A93D;
+    --rose:#E86A6A;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'URW Palladio L', P052, serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, 'Roboto Mono', monospace;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  body.light{
+    --bg:#F7F5F0; --bg-alt:#FBFAF7; --card:#FFFFFF; --card-2:#F1EFE8;
+    --line:#DCD8CC; --ink:#1B2333; --ink-dim:#565F76; --ink-faint:#8A93A8;
+  }
+  ::selection{ background: var(--emerald); color:#04140F; }
+  a{color:var(--emerald);}
+
+  /* ===== Ledger background texture ===== */
+  .ledger-rules{
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.05;
+    background-image: repeating-linear-gradient(to bottom, var(--ink) 0px, var(--ink) 1px, transparent 1px, transparent 42px);
+  }
+
+  /* ===== Top bar ===== */
+  .topbar{
+    position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px; background:rgba(11,18,32,.85); backdrop-filter: blur(10px); border-bottom:1px solid var(--line);
+  }
+  body.light .topbar{ background:rgba(247,245,240,.85); }
+  .brand{ display:flex; align-items:baseline; gap:10px; font-family:var(--serif); }
+  .brand .mark{ font-size:1.4rem; font-weight:700; letter-spacing:.5px; }
+  .brand .mark em{ color:var(--emerald); font-style:normal; }
+  .brand .tag{ font-size:.72rem; color:var(--ink-faint); font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase; }
+  .top-controls{ display:flex; align-items:center; gap:14px; }
+  .progress-pill{
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-dim); border:1px solid var(--line);
+    padding:6px 12px; border-radius:20px; display:flex; align-items:center; gap:8px;
+  }
+  .progress-pill .dot{ width:7px; height:7px; border-radius:50%; background:var(--line); }
+  .progress-pill .dot.done{ background:var(--emerald); }
+  .icon-btn{
+    background:var(--card); border:1px solid var(--line); color:var(--ink); border-radius:8px;
+    padding:7px 12px; cursor:pointer; font-size:.85rem; font-family:var(--sans); transition:.15s;
+  }
+  .icon-btn:hover{ border-color:var(--emerald); color:var(--emerald); }
+
+  main{ position:relative; z-index:1; max-width:920px; margin:0 auto; padding:0 24px 120px; }
+
+  /* ===== HERO / INTRO ===== */
+  .hero{ padding:64px 0 40px; border-bottom:1px dashed var(--line); }
+  .hero .eyebrow{ font-family:var(--mono); color:var(--emerald); font-size:.78rem; letter-spacing:.15em; text-transform:uppercase; margin-bottom:14px; }
+  .hero h1{ font-family:var(--serif); font-size:clamp(2.1rem,5vw,3.2rem); line-height:1.08; margin:0 0 18px; font-weight:700; }
+  .hero h1 span{ color:var(--emerald); }
+  .hero p.lede{ font-size:1.08rem; color:var(--ink-dim); max-width:640px; margin:0 0 34px; }
+
+  .stat-strip{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:34px; }
+  .stat-cell{ background:var(--card); padding:18px 16px; }
+  .stat-cell .num{ font-family:var(--mono); font-size:1.5rem; color:var(--emerald); font-weight:600; }
+  .stat-cell .lbl{ font-size:.74rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
+
+  .info-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; }
+  .info-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; }
+  .info-card h3{ font-family:var(--serif); margin:0 0 10px; font-size:1.05rem; color:var(--ink); }
+  .info-card ul{ margin:0; padding-left:18px; color:var(--ink-dim); font-size:.92rem; }
+  .info-card li{ margin-bottom:6px; }
+
+  .reward-box{
+    background:linear-gradient(135deg, rgba(47,217,168,.08), rgba(47,217,168,0));
+    border:1px solid var(--emerald-dim); border-radius:var(--radius); padding:20px 22px; margin-bottom:40px;
+  }
+  .reward-box h3{ font-family:var(--serif); margin:0 0 8px; color:var(--emerald); }
+  .reward-box p{ margin:0; color:var(--ink-dim); font-size:.92rem; }
+  .badge-row{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .badge{
+    font-family:var(--mono); font-size:.72rem; padding:6px 10px; border-radius:6px; border:1px solid var(--line);
+    color:var(--ink-faint); background:var(--card-2);
+  }
+  .badge.earned{ color:#04140F; background:var(--emerald); border-color:var(--emerald); }
+
+  .start-btn{
+    display:inline-block; background:var(--emerald); color:#04140F; font-weight:700; border:none;
+    padding:14px 30px; border-radius:8px; font-size:1rem; cursor:pointer; font-family:var(--sans);
+    transition:.15s; box-shadow:0 8px 24px rgba(47,217,168,.18);
+  }
+  .start-btn:hover{ transform:translateY(-1px); box-shadow:0 12px 28px rgba(47,217,168,.28); }
+
+  /* ===== MODULE NAV ===== */
+  .module-nav{ display:flex; gap:10px; margin:44px 0 18px; flex-wrap:wrap; }
+  .mnav-item{
+    flex:1; min-width:140px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px;
+    cursor:pointer; transition:.15s; opacity:.5; pointer-events:none;
+  }
+  .mnav-item.unlocked{ opacity:1; pointer-events:auto; }
+  .mnav-item.active{ border-color:var(--emerald); }
+  .mnav-item .n{ font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); }
+  .mnav-item .t{ font-size:.85rem; margin-top:3px; }
+  .mnav-item .status{ font-size:.68rem; color:var(--emerald); margin-top:5px; font-family:var(--mono); }
+
+  /* ===== MODULE ===== */
+  .module{ display:none; padding:40px 0; border-top:1px solid var(--line); }
+  .module.active{ display:block; }
+  .module-head{ margin-bottom:30px; }
+  .module-head .m-eyebrow{ font-family:var(--mono); font-size:.75rem; color:var(--amber); text-transform:uppercase; letter-spacing:.1em; }
+  .module-head h2{ font-family:var(--serif); font-size:2rem; margin:8px 0 10px; }
+  .module-head p{ color:var(--ink-dim); max-width:680px; }
+
+  .section-block{ margin-bottom:36px; }
+  .section-block h3{ font-family:var(--serif); font-size:1.25rem; margin-bottom:10px; border-left:3px solid var(--emerald); padding-left:12px; }
+  .section-block h4{ font-size:.95rem; color:var(--ink); margin:18px 0 8px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); }
+  .section-block p{ color:var(--ink-dim); }
+
+  .example-box{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin:14px 0; }
+  .example-box .tag{ font-family:var(--mono); font-size:.7rem; color:var(--emerald); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; display:block;}
+  .formula{
+    font-family:var(--mono); background:var(--bg-alt); border:1px solid var(--line); border-radius:8px;
+    padding:14px 16px; margin:10px 0; font-size:.95rem; color:var(--emerald); overflow-x:auto;
+  }
+  .analogy-box{
+    background:var(--card-2); border-left:3px solid var(--amber); border-radius:0 8px 8px 0; padding:14px 18px; margin:14px 0;
+  }
+  .analogy-box .tag{ color:var(--amber); font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; }
+  .misconception-box{
+    background:rgba(232,106,106,.06); border:1px solid rgba(232,106,106,.35); border-radius:8px; padding:14px 18px; margin:14px 0;
+  }
+  .misconception-box .tag{ color:var(--rose); font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; }
+  .takeaway-box{
+    background:rgba(47,217,168,.06); border:1px solid var(--emerald-dim); border-radius:8px; padding:16px 20px; margin:18px 0;
+  }
+  .takeaway-box ul{ margin:6px 0 0; padding-left:18px; }
+  .takeaway-box .tag{ color:var(--emerald); font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; }
+
+  table.cmp{ width:100%; border-collapse:collapse; margin:14px 0; font-size:.88rem; }
+  table.cmp th, table.cmp td{ border:1px solid var(--line); padding:10px 12px; text-align:left; }
+  table.cmp th{ background:var(--card-2); font-family:var(--mono); font-size:.72rem; text-transform:uppercase; color:var(--ink-faint); }
+  table.cmp td{ color:var(--ink-dim); }
+
+  /* interactive calculator */
+  .calc-box{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin:16px 0; }
+  .calc-box .tag{ font-family:var(--mono); font-size:.7rem; color:var(--emerald); text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:10px;}
+  .calc-row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .calc-row label{ font-size:.82rem; color:var(--ink-dim); min-width:170px; }
+  .calc-row input[type=range]{ flex:1; min-width:120px; accent-color:var(--emerald); }
+  .calc-row input[type=number]{
+    width:110px; background:var(--bg-alt); border:1px solid var(--line); color:var(--ink); padding:6px 8px; border-radius:6px; font-family:var(--mono);
+  }
+  .calc-result{ font-family:var(--mono); font-size:1.3rem; color:var(--emerald); margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .calc-result .verdict{ font-size:.82rem; color:var(--ink-dim); display:block; margin-top:4px; }
+
+  /* exercise */
+  .exercise-box{ background:var(--bg-alt); border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin:16px 0; }
+  .exercise-box .tag{ font-family:var(--mono); font-size:.7rem; color:var(--amber); text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:10px;}
+  .exercise-box textarea{ display:none; }
+  .reveal-btn{ background:none; border:1px solid var(--emerald-dim); color:var(--emerald); padding:8px 14px; border-radius:6px; cursor:pointer; font-family:var(--sans); font-size:.85rem; }
+  .reveal-answer{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); color:var(--ink-dim); font-size:.9rem; }
+  .reveal-answer.shown{ display:block; }
+
+  /* SVG diagram containers */
+  .diagram-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin:16px 0; text-align:center; }
+  .diagram-wrap svg{ max-width:100%; height:auto; }
+  .diagram-cap{ font-size:.78rem; color:var(--ink-faint); margin-top:8px; font-family:var(--mono); }
+
+  /* ===== QUIZ ===== */
+  .quiz{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px; margin-top:40px; }
+  .quiz-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .quiz-head h3{ font-family:var(--serif); margin:0; font-size:1.3rem; }
+  .quiz-progress{ font-family:var(--mono); font-size:.78rem; color:var(--ink-faint); }
+  .q-item{ margin-bottom:26px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .q-item:last-of-type{ border-bottom:none; }
+  .q-item .q-text{ font-size:.98rem; margin-bottom:12px; font-weight:600; }
+  .q-options{ display:flex; flex-direction:column; gap:8px; }
+  .q-option{
+    background:var(--bg-alt); border:1px solid var(--line); border-radius:8px; padding:11px 14px; cursor:pointer;
+    font-size:.9rem; transition:.15s; color:var(--ink);
+  }
+  .q-option:hover{ border-color:var(--emerald); }
+  .q-option.selected{ border-color:var(--emerald); background:rgba(47,217,168,.08); }
+  .q-option.correct{ border-color:var(--emerald); background:rgba(47,217,168,.16); }
+  .q-option.incorrect{ border-color:var(--rose); background:rgba(232,106,106,.12); }
+  .q-explain{ display:none; margin-top:10px; padding:10px 14px; background:var(--card-2); border-radius:6px; font-size:.85rem; color:var(--ink-dim); }
+  .q-explain.shown{ display:block; }
+  .quiz-submit{
+    background:var(--emerald); color:#04140F; border:none; padding:12px 26px; border-radius:8px; font-weight:700;
+    cursor:pointer; font-family:var(--sans);
+  }
+  .quiz-submit:disabled{ opacity:.4; cursor:not-allowed; }
+  .quiz-summary{ display:none; text-align:center; padding:24px; }
+  .quiz-summary.shown{ display:block; }
+  .quiz-summary .score{ font-family:var(--mono); font-size:2.4rem; color:var(--emerald); }
+  .quiz-summary p{ color:var(--ink-dim); margin:10px 0 20px; }
+  .next-btn{
+    background:none; border:1px solid var(--emerald); color:var(--emerald); padding:12px 26px; border-radius:8px;
+    font-weight:700; cursor:pointer; font-family:var(--sans);
+  }
+  .next-btn:hover{ background:var(--emerald); color:#04140F; }
+
+  /* ===== FINAL SECTION ===== */
+  .final-section{ padding:50px 0; border-top:1px solid var(--line); display:none; }
+  .final-section.active{ display:block; }
+  .final-section h2{ font-family:var(--serif); font-size:2rem; }
+  .cheat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+  .cheat-card{ background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; }
+  .cheat-card h4{ margin:0 0 8px; font-family:var(--mono); color:var(--emerald); font-size:.82rem; text-transform:uppercase; }
+  .cheat-card .f{ font-family:var(--mono); font-size:.85rem; color:var(--ink); margin-bottom:6px; }
+  .cheat-card .b{ font-size:.78rem; color:var(--ink-faint); }
+  .resource-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:16px; }
+  .resource-col h4{ font-family:var(--serif); color:var(--ink); border-bottom:1px solid var(--line); padding-bottom:8px; }
+  .resource-col ul{ padding-left:18px; color:var(--ink-dim); font-size:.9rem; }
+  .resource-col li{ margin-bottom:7px; }
+  .kw-cloud{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .kw{ font-family:var(--mono); font-size:.76rem; background:var(--card-2); border:1px solid var(--line); padding:5px 10px; border-radius:14px; color:var(--ink-dim); }
+  .prompt-box{ background:var(--bg-alt); border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin-bottom:10px; font-family:var(--mono); font-size:.82rem; color:var(--ink-dim); }
+
+  .print-btn{ margin-top:20px; }
+  @media print{
+    .topbar, .module-nav, .quiz-submit, .reveal-btn, .start-btn, .icon-btn{ display:none !important; }
+    body{ background:#fff; color:#000; }
+    .module{ display:block !important; }
+  }
+  @media (max-width:700px){
+    .info-grid, .cheat-grid, .resource-grid{ grid-template-columns:1fr; }
+    .stat-strip{ grid-template-columns:1fr 1fr; }
+    main{ padding:0 16px 100px; }
+  }
+</style>
+</head>
+<body>
+<div class="ledger-rules"></div>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">Ledger<em>Lab</em></span>
+    <span class="tag">Financial Ratio Analysis</span>
+  </div>
+  <div class="top-controls">
+    <div class="progress-pill"><span class="dot" id="pd1"></span><span class="dot" id="pd2"></span><span class="dot" id="pd3"></span><span class="dot" id="pd4"></span> <span id="progressText">0/4 modules</span></div>
+    <button class="icon-btn" onclick="window.print()">Print notes</button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☾ Dark</button>
+  </div>
+</div>
+
+<main>
+  <!-- ===================== HERO / INTRO ===================== -->
+  <section class="hero">
+    <div class="eyebrow">Interactive Learning Studio</div>
+    <h1>Master <span>Financial Ratio Analysis</span> — from raw statements to boardroom judgment</h1>
+    <p class="lede">A single, complete tutorial that takes you from reading a balance sheet to diagnosing a company's liquidity, efficiency, profitability, and leverage — the way analysts, lenders, and CFOs actually do it.</p>
+
+    <div class="stat-strip">
+      <div class="stat-cell"><div class="num">4</div><div class="lbl">Modules</div></div>
+      <div class="stat-cell"><div class="num">~75</div><div class="lbl">Minutes</div></div>
+      <div class="stat-cell"><div class="num">16</div><div class="lbl">Quiz Questions</div></div>
+      <div class="stat-cell"><div class="num">12+</div><div class="lbl">Ratios Mastered</div></div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>Learning Objectives</h3>
+        <ul>
+          <li>Read a balance sheet and income statement well enough to pull ratio inputs confidently</li>
+          <li>Calculate and interpret liquidity, efficiency, profitability, and leverage ratios</li>
+          <li>Use DuPont analysis to decompose ROE into its drivers</li>
+          <li>Spot red flags and the limits of ratio analysis in real filings</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Prerequisites &amp; Outcomes</h3>
+        <ul>
+          <li><strong>Prerequisites:</strong> basic arithmetic; no accounting background required</li>
+          <li><strong>Outcome:</strong> you'll be able to evaluate any public company's financial health from its 10-K in under 15 minutes</li>
+          <li><strong>Format:</strong> explanations, live calculators, and scored quizzes per module</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="reward-box">
+      <h3>🏅 Reward System</h3>
+      <p>Score 75%+ on each module quiz to unlock the next module and earn its badge. Finish all four to unlock the Analyst Certification badge and the final practical challenge.</p>
+      <div class="badge-row" id="badgeRow">
+        <span class="badge" id="badge1">Foundations</span>
+        <span class="badge" id="badge2">Liquidity &amp; Efficiency</span>
+        <span class="badge" id="badge3">Profitability &amp; Leverage</span>
+        <span class="badge" id="badge4">Mastery</span>
+        <span class="badge" id="badgeFinal">🏆 Analyst Certified</span>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="goToModule(1)">Begin Module 1 →</button>
+  </section>
+
+  <!-- ===================== MODULE NAV ===================== -->
+  <div class="module-nav">
+    <div class="mnav-item unlocked active" id="mnav1" onclick="goToModule(1)">
+      <div class="n">Module 01</div><div class="t">Foundations</div><div class="status" id="mstatus1">In progress</div>
+    </div>
+    <div class="mnav-item" id="mnav2" onclick="goToModule(2)">
+      <div class="n">Module 02</div><div class="t">Liquidity &amp; Efficiency</div><div class="status" id="mstatus2">Locked</div>
+    </div>
+    <div class="mnav-item" id="mnav3" onclick="goToModule(3)">
+      <div class="n">Module 03</div><div class="t">Profitability &amp; Leverage</div><div class="status" id="mstatus3">Locked</div>
+    </div>
+    <div class="mnav-item" id="mnav4" onclick="goToModule(4)">
+      <div class="n">Module 04</div><div class="t">Application &amp; Mastery</div><div class="status" id="mstatus4">Locked</div>
+    </div>
+  </div>
+
+  <!-- ===================== MODULE 1 ===================== -->
+  <section class="module active" id="module1">
+    <div class="module-head">
+      <div class="m-eyebrow">Module 01 · Foundational Understanding</div>
+      <h2>What Ratios Are, and What They're Made From</h2>
+      <p>Before calculating anything, you need to know where the numbers live and what a ratio is actually asking.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Why ratios exist</h3>
+      <p>A company's raw financial statements — revenue of $4.2B, assets of $9.1B — are hard to judge in isolation. Is $4.2B in revenue good? It depends entirely on the size of the company producing it. A <strong>ratio</strong> takes two numbers from the statements and divides one by the other, turning absolute size into a relative, comparable measure — one that can be checked against history, competitors, or industry norms regardless of company size.</p>
+      <div class="analogy-box">
+        <span class="tag">Analogy</span>
+        Think of it like miles-per-gallon instead of gallons-used. Knowing a car burned 12 gallons tells you nothing on its own. Knowing it got 45 miles per gallon tells you it's efficient — and it lets you compare a compact car to a truck fairly, even though they carry very different tank sizes.
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Where the numbers come from</h3>
+      <p>Every ratio pulls from one (or both) of two core statements:</p>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            .st-title{font: 700 13px var(--sans, sans-serif); fill:#2FD9A8;}
+            .st-line{font: 12px var(--mono, monospace); fill:#9AA6BE;}
+            .st-box{fill:#16223A; stroke:#243352;}
+          </style>
+          <rect class="st-box" x="10" y="10" width="330" height="200" rx="8"/>
+          <text class="st-title" x="30" y="36">BALANCE SHEET (a snapshot)</text>
+          <text class="st-line" x="30" y="62">Assets = Liabilities + Equity</text>
+          <text class="st-line" x="30" y="86">• Cash, Receivables, Inventory</text>
+          <text class="st-line" x="30" y="106">• Property, Plant &amp; Equipment</text>
+          <text class="st-line" x="30" y="126">• Accounts Payable, Debt</text>
+          <text class="st-line" x="30" y="146">• Shareholders' Equity</text>
+          <text class="st-line" x="30" y="176" fill="#E8A93D">Feeds: liquidity &amp; leverage ratios</text>
+          <rect class="st-box" x="380" y="10" width="330" height="200" rx="8"/>
+          <text class="st-title" x="400" y="36">INCOME STATEMENT (a period)</text>
+          <text class="st-line" x="400" y="62">Revenue − Expenses = Net Income</text>
+          <text class="st-line" x="400" y="86">• Revenue (Sales)</text>
+          <text class="st-line" x="400" y="106">• Cost of Goods Sold (COGS)</text>
+          <text class="st-line" x="400" y="126">• Operating Expenses</text>
+          <text class="st-line" x="400" y="146">• Net Income</text>
+          <text class="st-line" x="400" y="176" fill="#E8A93D">Feeds: profitability ratios</text>
+        </svg>
+        <div class="diagram-cap">Balance Sheet = point in time. Income Statement = span of time. Many ratios blend both.</div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>The five ratio families</h3>
+      <table class="cmp">
+        <tr><th>Family</th><th>Question it answers</th><th>Example</th></tr>
+        <tr><td>Liquidity</td><td>Can we pay bills due within a year?</td><td>Current Ratio</td></tr>
+        <tr><td>Efficiency</td><td>How well do we use our assets?</td><td>Inventory Turnover</td></tr>
+        <tr><td>Profitability</td><td>How much profit per dollar of sales/assets/equity?</td><td>Net Margin, ROE</td></tr>
+        <tr><td>Leverage / Solvency</td><td>How much debt risk are we carrying?</td><td>Debt-to-Equity</td></tr>
+        <tr><td>Market / Valuation</td><td>How does the market price our earnings?</td><td>P/E Ratio (mentioned, covered lightly)</td></tr>
+      </table>
+      <p>This tutorial builds deep fluency in the first four families — the ones used for internal and credit analysis — and touches market ratios in the final module.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Worked example: reading a mini statement</h3>
+      <div class="example-box">
+        <span class="tag">Example — Northwind Hardware Co.</span>
+        <table class="cmp">
+          <tr><th>Balance Sheet</th><th>Amount</th><th>Income Statement</th><th>Amount</th></tr>
+          <tr><td>Cash</td><td>$40,000</td><td>Revenue</td><td>$500,000</td></tr>
+          <tr><td>Accounts Receivable</td><td>$60,000</td><td>COGS</td><td>$300,000</td></tr>
+          <tr><td>Inventory</td><td>$100,000</td><td>Gross Profit</td><td>$200,000</td></tr>
+          <tr><td>Current Assets</td><td>$200,000</td><td>Operating Expenses</td><td>$120,000</td></tr>
+          <tr><td>Current Liabilities</td><td>$100,000</td><td>Net Income</td><td>$60,000</td></tr>
+          <tr><td>Total Assets</td><td>$450,000</td><td></td><td></td></tr>
+          <tr><td>Total Liabilities</td><td>$180,000</td><td></td><td></td></tr>
+          <tr><td>Shareholders' Equity</td><td>$270,000</td><td></td><td></td></tr>
+        </table>
+        <p>We'll reuse Northwind throughout this tutorial so the numbers stay familiar as the ratios get more advanced.</p>
+      </div>
+    </div>
+
+    <div class="misconception-box">
+      <span class="tag">Common Misconception</span>
+      "A higher ratio is always better." False for most ratios — a current ratio of 8 doesn't mean great liquidity, it often means idle cash and unused assets. Ratios need a target range, not a maximize-forever mindset.
+    </div>
+
+    <div class="exercise-box">
+      <span class="tag">Practical Exercise</span>
+      Using Northwind's numbers above, calculate <strong>Working Capital</strong> (Current Assets − Current Liabilities). Then think: is $100,000 of working capital healthy for a $500,000-revenue hardware distributor?
+      <div style="margin-top:12px;"><button class="reveal-btn" onclick="revealAnswer(this)">Reveal answer</button></div>
+      <div class="reveal-answer">Working Capital = $200,000 − $100,000 = <strong>$100,000</strong>. For a distributor carrying heavy inventory, this is a reasonable cushion — roughly 20% of annual revenue — but we can't call it "healthy" without comparing it to industry peers, which is exactly what Module 2 teaches.</div>
+    </div>
+
+    <div class="takeaway-box">
+      <span class="tag">Key Takeaways</span>
+      <ul>
+        <li>Ratios convert absolute numbers into comparable, sized-adjusted measures</li>
+        <li>Balance Sheet = snapshot; Income Statement = period — ratios often combine both</li>
+        <li>Five families: liquidity, efficiency, profitability, leverage, market</li>
+        <li>No ratio is "good" or "bad" in isolation — context (industry, trend, peers) decides that</li>
+      </ul>
+    </div>
+
+    <!-- QUIZ 1 -->
+    <div class="quiz" id="quiz1" data-module="1">
+      <div class="quiz-head"><h3>Module 01 Check</h3><span class="quiz-progress">4 questions</span></div>
+      <div id="quizBody1"></div>
+      <button class="quiz-submit" id="submitBtn1" onclick="submitQuiz(1)">Submit Answers</button>
+      <div class="quiz-summary" id="summary1">
+        <div class="score" id="score1"></div>
+        <p id="summaryText1"></p>
+        <button class="next-btn" onclick="unlockNext(1)">Unlock Module 02 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MODULE 2 ===================== -->
+  <section class="module" id="module2">
+    <div class="module-head">
+      <div class="m-eyebrow">Module 02 · Applying the Basics</div>
+      <h2>Liquidity &amp; Efficiency Ratios</h2>
+      <p>Can the company survive the next 12 months, and how well does it turn assets into sales?</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Liquidity ratios</h3>
+      <h4>Current Ratio</h4>
+      <div class="formula">Current Ratio = Current Assets ÷ Current Liabilities</div>
+      <p>Measures whether short-term assets cover short-term obligations. Northwind: $200,000 ÷ $100,000 = <strong>2.0</strong> — for every $1 of bills due soon, Northwind holds $2 of assets that could cover them.</p>
+
+      <h4>Quick Ratio (Acid-Test)</h4>
+      <div class="formula">Quick Ratio = (Current Assets − Inventory) ÷ Current Liabilities</div>
+      <p>Strips out inventory, the least liquid current asset, because it can't always be sold quickly at full value. Northwind: ($200,000 − $100,000) ÷ $100,000 = <strong>1.0</strong>.</p>
+
+      <h4>Cash Ratio</h4>
+      <div class="formula">Cash Ratio = Cash &amp; Equivalents ÷ Current Liabilities</div>
+      <p>The strictest test — only cash counts. Northwind: $40,000 ÷ $100,000 = <strong>0.4</strong>.</p>
+
+      <div class="analogy-box">
+        <span class="tag">Analogy</span>
+        Current, quick, and cash ratios are like checking if you can pay this month's rent using (1) everything you own you could eventually sell, (2) everything except furniture you'd have to haggle over, and (3) only what's already in your checking account. Each is a stricter test of the same question.
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Try it: Liquidity Calculator</h3>
+      <div class="calc-box">
+        <span class="tag">Interactive — drag the sliders</span>
+        <div class="calc-row"><label>Current Assets ($k)</label><input type="range" id="caSlider" min="50" max="400" value="200" oninput="calcLiquidity()"><input type="number" id="caNum" value="200" oninput="syncSlider('caSlider','caNum')"></div>
+        <div class="calc-row"><label>Inventory ($k)</label><input type="range" id="invSlider" min="0" max="250" value="100" oninput="calcLiquidity()"><input type="number" id="invNum" value="100" oninput="syncSlider('invSlider','invNum')"></div>
+        <div class="calc-row"><label>Current Liabilities ($k)</label><input type="range" id="clSlider" min="20" max="300" value="100" oninput="calcLiquidity()"><input type="number" id="clNum" value="100" oninput="syncSlider('clSlider','clNum')"></div>
+        <div class="calc-result" id="liqResult">Current Ratio: 2.00 <span class="verdict" id="liqVerdict">Comfortable liquidity — assets safely cover near-term obligations.</span></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Efficiency ratios</h3>
+      <h4>Inventory Turnover</h4>
+      <div class="formula">Inventory Turnover = COGS ÷ Average Inventory</div>
+      <p>Northwind: $300,000 ÷ $100,000 = <strong>3.0x</strong> per year — inventory fully sells through and restocks 3 times a year (about every 122 days).</p>
+
+      <h4>Days Sales Outstanding (DSO)</h4>
+      <div class="formula">DSO = (Accounts Receivable ÷ Revenue) × 365</div>
+      <p>Northwind: ($60,000 ÷ $500,000) × 365 = <strong>~44 days</strong> to collect cash after a sale.</p>
+
+      <h4>Total Asset Turnover</h4>
+      <div class="formula">Asset Turnover = Revenue ÷ Total Assets</div>
+      <p>Northwind: $500,000 ÷ $450,000 = <strong>1.11x</strong> — every $1 of assets generates $1.11 of annual revenue.</p>
+    </div>
+
+    <table class="cmp">
+      <tr><th>Ratio</th><th>Northwind</th><th>Reads as</th></tr>
+      <tr><td>Current Ratio</td><td>2.0</td><td>Strong short-term coverage</td></tr>
+      <tr><td>Quick Ratio</td><td>1.0</td><td>Adequate even excluding inventory</td></tr>
+      <tr><td>Inventory Turnover</td><td>3.0x</td><td>Moderate — compare to hardware industry (~4-6x)</td></tr>
+      <tr><td>DSO</td><td>~44 days</td><td>Slower collection than typical 30-day terms</td></tr>
+    </table>
+
+    <div class="misconception-box">
+      <span class="tag">Common Misconception</span>
+      "Low inventory turnover always means poor management." Not necessarily — some industries (luxury goods, heavy machinery) naturally hold inventory longer. Always benchmark turnover against the specific industry, not a universal number.
+    </div>
+
+    <div class="exercise-box">
+      <span class="tag">Practical Exercise</span>
+      A competitor, Ridgeline Supply, has Current Assets $150,000, Inventory $90,000, Current Liabilities $120,000. Calculate its Current Ratio and Quick Ratio, then compare to Northwind.
+      <div style="margin-top:12px;"><button class="reveal-btn" onclick="revealAnswer(this)">Reveal answer</button></div>
+      <div class="reveal-answer">Current Ratio = 150,000 ÷ 120,000 = <strong>1.25</strong>. Quick Ratio = (150,000 − 90,000) ÷ 120,000 = <strong>0.5</strong>. Both are weaker than Northwind's 2.0 and 1.0 — Ridgeline is more inventory-heavy relative to its bills, and would struggle more if it had to pay obligations without selling stock first.</div>
+    </div>
+
+    <div class="takeaway-box">
+      <span class="tag">Key Takeaways</span>
+      <ul>
+        <li>Current, quick, and cash ratios test liquidity at progressively stricter levels</li>
+        <li>Efficiency ratios (turnover, DSO) reveal how fast assets convert to sales and cash</li>
+        <li>Always benchmark against industry norms, not fixed universal thresholds</li>
+      </ul>
+    </div>
+
+    <div class="quiz" id="quiz2" data-module="2">
+      <div class="quiz-head"><h3>Module 02 Check</h3><span class="quiz-progress">4 questions</span></div>
+      <div id="quizBody2"></div>
+      <button class="quiz-submit" id="submitBtn2" onclick="submitQuiz(2)">Submit Answers</button>
+      <div class="quiz-summary" id="summary2">
+        <div class="score" id="score2"></div>
+        <p id="summaryText2"></p>
+        <button class="next-btn" onclick="unlockNext(2)">Unlock Module 03 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MODULE 3 ===================== -->
+  <section class="module" id="module3">
+    <div class="module-head">
+      <div class="m-eyebrow">Module 03 · Deeper Application</div>
+      <h2>Profitability &amp; Leverage Ratios</h2>
+      <p>How much of every sales dollar becomes profit, and how much risk comes from debt?</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Profitability ratios</h3>
+      <h4>Gross Margin</h4>
+      <div class="formula">Gross Margin = Gross Profit ÷ Revenue</div>
+      <p>Northwind: $200,000 ÷ $500,000 = <strong>40%</strong> — after covering the direct cost of goods, 40 cents of every sales dollar remains.</p>
+
+      <h4>Operating Margin</h4>
+      <div class="formula">Operating Margin = Operating Income ÷ Revenue</div>
+      <p>Operating Income = Gross Profit − Operating Expenses = $200,000 − $120,000 = $80,000. Margin = $80,000 ÷ $500,000 = <strong>16%</strong>.</p>
+
+      <h4>Net Margin</h4>
+      <div class="formula">Net Margin = Net Income ÷ Revenue</div>
+      <p>Northwind: $60,000 ÷ $500,000 = <strong>12%</strong> — the true bottom-line profitability after all costs, interest, and taxes.</p>
+
+      <h4>Return on Assets (ROA) &amp; Return on Equity (ROE)</h4>
+      <div class="formula">ROA = Net Income ÷ Total Assets      ROE = Net Income ÷ Shareholders' Equity</div>
+      <p>Northwind ROA: $60,000 ÷ $450,000 = <strong>13.3%</strong>. Northwind ROE: $60,000 ÷ $270,000 = <strong>22.2%</strong>.</p>
+
+      <div class="analogy-box">
+        <span class="tag">Analogy</span>
+        Gross, operating, and net margin are like filtering coffee through three finer sieves. Gross margin removes only the biggest grounds (direct product cost). Operating margin filters out running the shop (rent, salaries). Net margin is the final cup — after taxes and interest, the last "pure" liquid you actually keep.
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Try it: Margin Waterfall</h3>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="20" width="660" height="30" rx="4" fill="#16223A" stroke="#243352"/>
+          <rect x="20" y="20" width="660" height="30" rx="4" fill="#2FD9A8" opacity=".9"/>
+          <text x="30" y="40" font-family="var(--mono)" font-size="12" fill="#04140F">Revenue $500,000 (100%)</text>
+
+          <rect x="20" y="70" width="264" height="30" rx="4" fill="#16223A" stroke="#243352"/>
+          <rect x="20" y="70" width="264" height="30" rx="4" fill="#2FD9A8" opacity=".7"/>
+          <text x="30" y="90" font-family="var(--mono)" font-size="12" fill="#04140F">Gross Profit $200,000 (40%)</text>
+
+          <rect x="20" y="120" width="106" height="30" rx="4" fill="#16223A" stroke="#243352"/>
+          <rect x="20" y="120" width="106" height="30" rx="4" fill="#E8A93D" opacity=".85"/>
+          <text x="30" y="140" font-family="var(--mono)" font-size="11" fill="#04140F">Op. Income $80,000</text>
+
+          <rect x="20" y="170" width="80" height="20" rx="4" fill="#16223A" stroke="#243352"/>
+          <rect x="20" y="170" width="80" height="20" rx="4" fill="#E86A6A" opacity=".85"/>
+          <text x="24" y="185" font-family="var(--mono)" font-size="10" fill="#04140F">Net $60,000</text>
+        </svg>
+        <div class="diagram-cap">Each layer strips out another cost bucket — COGS, then operating expenses, then interest &amp; tax.</div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Leverage / solvency ratios</h3>
+      <h4>Debt-to-Equity</h4>
+      <div class="formula">D/E = Total Liabilities ÷ Shareholders' Equity</div>
+      <p>Northwind: $180,000 ÷ $270,000 = <strong>0.67</strong> — for every $1 of equity, the company carries 67 cents of liabilities.</p>
+
+      <h4>Debt Ratio</h4>
+      <div class="formula">Debt Ratio = Total Liabilities ÷ Total Assets</div>
+      <p>Northwind: $180,000 ÷ $450,000 = <strong>0.40</strong> — 40% of assets are financed by debt/liabilities, 60% by equity.</p>
+
+      <h4>Interest Coverage Ratio</h4>
+      <div class="formula">Interest Coverage = EBIT ÷ Interest Expense</div>
+      <p>If Northwind pays $10,000 in annual interest: $80,000 ÷ $10,000 = <strong>8.0x</strong> — operating income covers interest payments 8 times over, a comfortable cushion.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Try it: Leverage Risk Calculator</h3>
+      <div class="calc-box">
+        <span class="tag">Interactive — adjust debt load</span>
+        <div class="calc-row"><label>Total Liabilities ($k)</label><input type="range" id="tlSlider" min="20" max="400" value="180" oninput="calcLeverage()"><input type="number" id="tlNum" value="180" oninput="syncSlider('tlSlider','tlNum')"></div>
+        <div class="calc-row"><label>Shareholders' Equity ($k)</label><input type="range" id="seSlider" min="50" max="400" value="270" oninput="calcLeverage()"><input type="number" id="seNum" value="270" oninput="syncSlider('seSlider','seNum')"></div>
+        <div class="calc-result" id="levResult">Debt-to-Equity: 0.67 <span class="verdict" id="levVerdict">Conservative — equity comfortably outweighs liabilities.</span></div>
+      </div>
+    </div>
+
+    <div class="misconception-box">
+      <span class="tag">Common Misconception</span>
+      "Zero debt is the ideal capital structure." Not for most companies — some debt is often cheaper than equity and creates a tax shield on interest. The goal is an appropriate level of leverage for the industry and cash flow stability, not the minimum possible.
+    </div>
+
+    <div class="exercise-box">
+      <span class="tag">Practical Exercise</span>
+      A tech company has Net Income $2M, Revenue $20M, Total Assets $15M, Equity $10M. Calculate Net Margin, ROA, and ROE.
+      <div style="margin-top:12px;"><button class="reveal-btn" onclick="revealAnswer(this)">Reveal answer</button></div>
+      <div class="reveal-answer">Net Margin = 2M ÷ 20M = <strong>10%</strong>. ROA = 2M ÷ 15M = <strong>13.3%</strong>. ROE = 2M ÷ 10M = <strong>20%</strong>. Notice ROE > ROA — that gap is the effect of leverage, which Module 4's DuPont analysis explains precisely.</div>
+    </div>
+
+    <div class="takeaway-box">
+      <span class="tag">Key Takeaways</span>
+      <ul>
+        <li>Gross → operating → net margin progressively strip out cost layers</li>
+        <li>ROA measures return on all assets; ROE measures return on owners' stake specifically</li>
+        <li>Leverage ratios measure risk from debt, not profitability — high D/E isn't automatically bad</li>
+        <li>Interest coverage shows how safely a company can service its debt from operating income</li>
+      </ul>
+    </div>
+
+    <div class="quiz" id="quiz3" data-module="3">
+      <div class="quiz-head"><h3>Module 03 Check</h3><span class="quiz-progress">4 questions</span></div>
+      <div id="quizBody3"></div>
+      <button class="quiz-submit" id="submitBtn3" onclick="submitQuiz(3)">Submit Answers</button>
+      <div class="quiz-summary" id="summary3">
+        <div class="score" id="score3"></div>
+        <p id="summaryText3"></p>
+        <button class="next-btn" onclick="unlockNext(3)">Unlock Module 04 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MODULE 4 ===================== -->
+  <section class="module" id="module4">
+    <div class="module-head">
+      <div class="m-eyebrow">Module 04 · Mastery &amp; Real-World Application</div>
+      <h2>DuPont Analysis, Benchmarking &amp; Red Flags</h2>
+      <p>Combine everything into the framework professional analysts actually use.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>DuPont Analysis: decomposing ROE</h3>
+      <p>ROE can be broken into three drivers, revealing <em>why</em> a company is (or isn't) profitable for its owners:</p>
+      <div class="formula">ROE = Net Margin × Asset Turnover × Equity Multiplier
+     = (Net Income/Revenue) × (Revenue/Assets) × (Assets/Equity)</div>
+      <p>Northwind: Net Margin 12% × Asset Turnover 1.11x × Equity Multiplier (450,000/270,000 = 1.67) = <strong>22.2% ROE</strong> — matching our earlier direct calculation, but now we know it comes from decent margins, efficient asset use, and moderate leverage — not just one factor doing all the work.</p>
+      <div class="analogy-box">
+        <span class="tag">Analogy</span>
+        DuPont analysis is like a doctor not just reporting your weight, but explaining it comes from diet, exercise, and metabolism separately. Two companies can have identical 22% ROE for completely different — and differently risky — reasons.
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Try it: DuPont Decomposition</h3>
+      <div class="calc-box">
+        <span class="tag">Interactive — see how ROE is built</span>
+        <div class="calc-row"><label>Net Margin (%)</label><input type="range" id="nmSlider" min="1" max="30" value="12" oninput="calcDupont()"><input type="number" id="nmNum" value="12" oninput="syncSlider('nmSlider','nmNum')"></div>
+        <div class="calc-row"><label>Asset Turnover (x)</label><input type="range" id="atSlider" min="10" max="300" value="111" oninput="calcDupont()"><input type="number" id="atNum" value="1.11" step="0.01" oninput="syncSliderFloat('atSlider','atNum')"></div>
+        <div class="calc-row"><label>Equity Multiplier (x)</label><input type="range" id="emSlider" min="100" max="500" value="167" oninput="calcDupont()"><input type="number" id="emNum" value="1.67" step="0.01" oninput="syncSliderFloat('emSlider','emNum')"></div>
+        <div class="calc-result" id="dupontResult">ROE: 22.2% <span class="verdict" id="dupontVerdict">Balanced mix of margin, efficiency, and leverage.</span></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Comparative &amp; trend analysis</h3>
+      <p>A ratio in isolation is only a data point. Real analysis compares it across three dimensions:</p>
+      <table class="cmp">
+        <tr><th>Comparison type</th><th>What it reveals</th></tr>
+        <tr><td>Trend (time-series)</td><td>Is the company's own ratio improving or deteriorating year over year?</td></tr>
+        <tr><td>Cross-sectional (peer)</td><td>How does it stack up against direct competitors of similar size?</td></tr>
+        <tr><td>Industry benchmark</td><td>Is it in line with sector norms (e.g., retail turns inventory faster than aerospace)?</td></tr>
+      </table>
+      <p>Northwind's current ratio of 2.0 looks strong alone, but if the hardware distribution industry average is 2.5, Northwind is actually below par — context flips the conclusion.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Red flags &amp; the limits of ratio analysis</h3>
+      <ul style="color:var(--ink-dim);">
+        <li><strong>Rapidly rising DSO</strong> alongside flat revenue — customers are struggling to pay, or channel-stuffing is occurring</li>
+        <li><strong>Margins improving while cash flow falls</strong> — possible aggressive revenue recognition</li>
+        <li><strong>One-time gains inflating net margin</strong> — always check for non-recurring items in the notes</li>
+        <li><strong>Ratios calculated from year-end-only balances</strong> can be seasonally distorted — averages are more reliable</li>
+        <li>Ratios say nothing about qualitative factors: management quality, brand strength, litigation risk</li>
+      </ul>
+      <div class="misconception-box">
+        <span class="tag">Common Misconception</span>
+        "If the ratios look fine, the company is healthy." Ratios are backward-looking accounting snapshots — they can miss off-balance-sheet risk, related-party transactions, and can even be manipulated within accounting rules. Ratios are a starting point for questions, not a final verdict.
+      </div>
+    </div>
+
+    <div class="exercise-box">
+      <span class="tag">Practical Exercise</span>
+      Company A: Net Margin 5%, Asset Turnover 3.0x, Equity Multiplier 1.2x. Company B: Net Margin 15%, Asset Turnover 0.5x, Equity Multiplier 2.5x. Calculate both ROEs — are they equally risky?
+      <div style="margin-top:12px;"><button class="reveal-btn" onclick="revealAnswer(this)">Reveal answer</button></div>
+      <div class="reveal-answer">Company A ROE = 5% × 3.0 × 1.2 = <strong>18%</strong>. Company B ROE = 15% × 0.5 × 2.5 = <strong>18.75%</strong> — nearly identical ROE. But Company A earns it through high turnover and low leverage (likely a retailer — lower risk), while Company B relies on high leverage (2.5x multiplier) — a downturn hits Company B's equity much harder. Same ROE, very different risk.</div>
+    </div>
+
+    <div class="takeaway-box">
+      <span class="tag">Key Takeaways</span>
+      <ul>
+        <li>DuPont analysis splits ROE into margin, efficiency, and leverage — explaining the "why," not just the "what"</li>
+        <li>Always compare ratios across time, peers, and industry — never in isolation</li>
+        <li>Watch for red flags: rising DSO, margin/cash flow divergence, one-time items, seasonal distortion</li>
+        <li>Ratios are a diagnostic starting point, not a complete verdict on a company</li>
+      </ul>
+    </div>
+
+    <div class="quiz" id="quiz4" data-module="4">
+      <div class="quiz-head"><h3>Module 04 Check</h3><span class="quiz-progress">4 questions</span></div>
+      <div id="quizBody4"></div>
+      <button class="quiz-submit" id="submitBtn4" onclick="submitQuiz(4)">Submit Answers</button>
+      <div class="quiz-summary" id="summary4">
+        <div class="score" id="score4"></div>
+        <p id="summaryText4"></p>
+        <button class="next-btn" onclick="unlockFinal()">See Final Challenge &amp; Resources →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL SECTION ===================== -->
+  <section class="final-section" id="finalSection">
+    <div class="m-eyebrow" style="font-family:var(--mono);color:var(--amber);text-transform:uppercase;letter-spacing:.1em;font-size:.75rem;">Final Challenge</div>
+    <h2>Diagnose a Real Balance Sheet</h2>
+    <div class="exercise-box">
+      <span class="tag">Capstone Challenge</span>
+      Harborview Textiles reports: Current Assets $320,000, Inventory $180,000, Current Liabilities $200,000, Cash $30,000, Total Assets $900,000, Total Liabilities $500,000, Equity $400,000, Revenue $1,100,000, COGS $750,000, Operating Expenses $260,000, Net Income $60,000.
+      <br><br>Calculate: Current Ratio, Quick Ratio, Net Margin, ROE, and Debt-to-Equity — then write one sentence judging its overall financial health.
+      <div style="margin-top:12px;"><button class="reveal-btn" onclick="revealAnswer(this)">Reveal full solution</button></div>
+      <div class="reveal-answer">
+        Current Ratio = 320,000/200,000 = <strong>1.6</strong>. Quick Ratio = (320,000−180,000)/200,000 = <strong>0.7</strong>. Net Margin = 60,000/1,100,000 = <strong>5.5%</strong>. ROE = 60,000/400,000 = <strong>15%</strong>. D/E = 500,000/400,000 = <strong>1.25</strong>.<br><br>
+        <strong>Judgment:</strong> Harborview has adequate but not strong liquidity (quick ratio below 1 signals reliance on inventory sales to cover short-term bills), thin margins typical of textiles, a respectable 15% ROE, and moderately elevated leverage (D/E 1.25) — worth watching if margins compress further, since debt service would then pressure cash flow.
+      </div>
+    </div>
+
+    <h2 style="margin-top:50px;">Cheat Sheet</h2>
+    <div class="cheat-grid">
+      <div class="cheat-card"><h4>Current Ratio</h4><div class="f">CA ÷ CL</div><div class="b">Short-term coverage — ~1.5–3 typically healthy</div></div>
+      <div class="cheat-card"><h4>Quick Ratio</h4><div class="f">(CA − Inventory) ÷ CL</div><div class="b">Stricter liquidity test — ~1.0 is a common target</div></div>
+      <div class="cheat-card"><h4>Inventory Turnover</h4><div class="f">COGS ÷ Avg. Inventory</div><div class="b">Higher generally = faster-moving stock</div></div>
+      <div class="cheat-card"><h4>DSO</h4><div class="f">(AR ÷ Revenue) × 365</div><div class="b">Days to collect cash after a sale</div></div>
+      <div class="cheat-card"><h4>Gross / Operating / Net Margin</h4><div class="f">Respective Profit ÷ Revenue</div><div class="b">Progressive cost-layer filters on revenue</div></div>
+      <div class="cheat-card"><h4>ROA / ROE</h4><div class="f">NI ÷ Assets · NI ÷ Equity</div><div class="b">Return on all capital vs. owners' capital</div></div>
+      <div class="cheat-card"><h4>Debt-to-Equity</h4><div class="f">Total Liabilities ÷ Equity</div><div class="b">Leverage relative to owner capital</div></div>
+      <div class="cheat-card"><h4>DuPont ROE</h4><div class="f">Margin × Turnover × Multiplier</div><div class="b">Decomposes ROE into 3 explanatory drivers</div></div>
+    </div>
+
+    <h2 style="margin-top:50px;">Continue Learning</h2>
+    <div class="resource-grid">
+      <div class="resource-col">
+        <h4>Books</h4>
+        <ul>
+          <li>"Financial Statement Analysis" — Martin Fridson &amp; Fernando Alvarez</li>
+          <li>"The Interpretation of Financial Statements" — Benjamin Graham</li>
+          <li>"Financial Intelligence" — Karen Berman &amp; Joe Knight</li>
+        </ul>
+        <h4>Documentation &amp; Standards</h4>
+        <ul>
+          <li>SEC EDGAR — full-text 10-K/10-Q filings for any public company</li>
+          <li>FASB Codification — U.S. GAAP standards reference</li>
+          <li>IFRS Foundation — international standards reference</li>
+        </ul>
+      </div>
+      <div class="resource-col">
+        <h4>Research &amp; Frameworks</h4>
+        <ul>
+          <li>Altman's Z-Score model (bankruptcy prediction using ratios)</li>
+          <li>Piotroski F-Score (9-point fundamental strength screen)</li>
+          <li>CFA Institute curriculum — Financial Statement Analysis readings</li>
+        </ul>
+        <h4>Communities &amp; Practice</h4>
+        <ul>
+          <li>r/financialindependence, r/SecurityAnalysis (discussion)</li>
+          <li>Wall Street Prep, Corporate Finance Institute (courses)</li>
+          <li>Practice: pick any 10-K on SEC EDGAR and compute this tutorial's ratios by hand</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 style="margin-top:40px;">Search Keywords</h2>
+    <div class="kw-cloud">
+      <span class="kw">liquidity ratio analysis</span><span class="kw">DuPont identity ROE</span>
+      <span class="kw">inventory turnover benchmark</span><span class="kw">debt to equity by industry</span>
+      <span class="kw">financial statement red flags</span><span class="kw">10-K ratio analysis</span>
+      <span class="kw">Altman Z-score</span><span class="kw">working capital management</span>
+    </div>
+
+    <h2 style="margin-top:40px;">AI Prompts for Further Learning</h2>
+    <div class="prompt-box">"Pull the last 3 years of [Company]'s 10-K and calculate its current ratio, quick ratio, and DSO trend — explain what's improving or deteriorating."</div>
+    <div class="prompt-box">"Compare the DuPont ROE decomposition of [Company A] and [Company B] in the same industry — which is higher quality earnings?"</div>
+    <div class="prompt-box">"Explain how Altman's Z-Score is built from financial ratios and calculate it for [Company] using its latest balance sheet."</div>
+    <div class="prompt-box">"What red flags should I look for in [Company]'s financial statements given rising receivables but flat revenue?"</div>
+
+    <button class="start-btn print-btn" onclick="window.print()">🖨 Print / Save Notes as PDF</button>
+  </section>
+</main>
+
+<script>
+/* ===================== THEME ===================== */
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent = document.body.classList.contains('light') ? '☀ Light' : '☾ Dark';
+}
+
+/* ===================== NAV / PROGRESS ===================== */
+let unlocked = {1:true,2:false,3:false,4:false};
+let completed = {1:false,2:false,3:false,4:false};
+
+function goToModule(n){
+  if(!unlocked[n]) return;
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.getElementById('module'+n).classList.add('active');
+  document.querySelectorAll('.mnav-item').forEach(m=>m.classList.remove('active'));
+  document.getElementById('mnav'+n).classList.add('active');
+  document.getElementById('module'+n).scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function updateProgressPill(){
+  let count = Object.values(completed).filter(Boolean).length;
+  document.getElementById('progressText').textContent = count+'/4 modules';
+  for(let i=1;i<=4;i++){
+    document.getElementById('pd'+i).classList.toggle('done', completed[i]);
+  }
+}
+
+function unlockNext(fromModule){
+  let next = fromModule+1;
+  completed[fromModule]=true;
+  document.getElementById('badge'+fromModule).classList.add('earned');
+  if(next<=4){
+    unlocked[next]=true;
+    document.getElementById('mnav'+next).classList.add('unlocked');
+    document.getElementById('mstatus'+next).textContent='Unlocked';
+    updateProgressPill();
+    goToModule(next);
+  }
+}
+function unlockFinal(){
+  completed[4]=true;
+  document.getElementById('badge4').classList.add('earned');
+  document.getElementById('badgeFinal').classList.add('earned');
+  updateProgressPill();
+  document.getElementById('finalSection').classList.add('active');
+  document.getElementById('finalSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ===================== EXERCISE REVEAL ===================== */
+function revealAnswer(btn){
+  const answer = btn.parentElement.nextElementSibling;
+  answer.classList.toggle('shown');
+  btn.textContent = answer.classList.contains('shown') ? 'Hide answer' : 'Reveal answer';
+}
+
+/* ===================== CALCULATORS ===================== */
+function syncSlider(sliderId, numId){
+  document.getElementById(sliderId).value = document.getElementById(numId).value;
+  if(sliderId.startsWith('ca')||sliderId.startsWith('inv')||sliderId.startsWith('cl')) calcLiquidity();
+  if(sliderId.startsWith('tl')||sliderId.startsWith('se')) calcLeverage();
+}
+function syncSliderFloat(sliderId, numId){
+  document.getElementById(sliderId).value = Math.round(document.getElementById(numId).value*100);
+  calcDupont();
+}
+function calcLiquidity(){
+  const ca = parseFloat(document.getElementById('caSlider').value);
+  const inv = parseFloat(document.getElementById('invSlider').value);
+  const cl = parseFloat(document.getElementById('clSlider').value);
+  document.getElementById('caNum').value = ca;
+  document.getElementById('invNum').value = inv;
+  document.getElementById('clNum').value = cl;
+  const cr = (ca/cl).toFixed(2);
+  const qr = ((ca-inv)/cl).toFixed(2);
+  let verdict = cr>=2 ? 'Comfortable liquidity — assets safely cover near-term obligations.' :
+                cr>=1 ? 'Adequate — obligations are covered, but with less cushion.' :
+                'Warning — current liabilities exceed current assets.';
+  document.getElementById('liqResult').innerHTML = `Current Ratio: ${cr} · Quick Ratio: ${qr} <span class="verdict" id="liqVerdict">${verdict}</span>`;
+}
+function calcLeverage(){
+  const tl = parseFloat(document.getElementById('tlSlider').value);
+  const se = parseFloat(document.getElementById('seSlider').value);
+  document.getElementById('tlNum').value = tl;
+  document.getElementById('seNum').value = se;
+  const de = (tl/se).toFixed(2);
+  let verdict = de<0.5 ? 'Conservative — equity comfortably outweighs liabilities.' :
+                de<=1.5 ? 'Moderate leverage — a common, manageable range for most industries.' :
+                'High leverage — debt servicing risk rises significantly in a downturn.';
+  document.getElementById('levResult').innerHTML = `Debt-to-Equity: ${de} <span class="verdict" id="levVerdict">${verdict}</span>`;
+}
+function calcDupont(){
+  const nm = parseFloat(document.getElementById('nmSlider').value)/100;
+  const at = parseFloat(document.getElementById('atSlider').value)/100;
+  const em = parseFloat(document.getElementById('emSlider').value)/100;
+  document.getElementById('nmNum').value = (nm*100).toFixed(0);
+  document.getElementById('atNum').value = at.toFixed(2);
+  document.getElementById('emNum').value = em.toFixed(2);
+  const roe = (nm*at*em*100).toFixed(1);
+  let verdict = roe>=20 ? 'Strong ROE — check whether it comes from margin/efficiency (lower risk) or leverage (higher risk).' :
+                roe>=10 ? 'Balanced mix of margin, efficiency, and leverage.' :
+                'Below-average ROE — investigate which driver is weakest.';
+  document.getElementById('dupontResult').innerHTML = `ROE: ${roe}% <span class="verdict" id="dupontVerdict">${verdict}</span>`;
+}
+
+/* ===================== QUIZ DATA ===================== */
+const quizData = {
+  1:[
+    {q:"Why do analysts use ratios instead of raw financial statement numbers?",
+     opts:["Ratios are always required by law","Ratios adjust for company size, making comparisons possible","Raw numbers are inaccurate","Ratios eliminate the need for financial statements"],
+     correct:1, explain:"Ratios turn absolute figures into size-adjusted, comparable measures — the core reason they exist."},
+    {q:"The Balance Sheet represents:",
+     opts:["A snapshot at one point in time","Performance over a period","Only cash transactions","Future projected earnings"],
+     correct:0, explain:"The Balance Sheet is a snapshot of assets, liabilities, and equity at a specific date."},
+    {q:"Which statement primarily feeds profitability ratios?",
+     opts:["Balance Sheet","Income Statement","Statement of Cash Flows notes only","Auditor's report"],
+     correct:1, explain:"Revenue, COGS, expenses, and net income — all profitability inputs — live on the Income Statement."},
+    {q:"A current ratio that is extremely high (e.g., 8.0) most likely indicates:",
+     opts:["Guaranteed excellent management","Possibly idle, underused assets","An accounting error by default","The company has no liabilities at all"],
+     correct:1, explain:"Very high ratios often mean excess idle cash/assets not being deployed productively — 'higher' isn't automatically 'better'."}
+  ],
+  2:[
+    {q:"The Quick Ratio differs from the Current Ratio by excluding:",
+     opts:["Cash","Accounts Receivable","Inventory","Current Liabilities"],
+     correct:2, explain:"Quick Ratio removes inventory, the least liquid current asset, for a stricter liquidity test."},
+    {q:"If Inventory Turnover is low compared to industry peers, this could mean:",
+     opts:["The company always has poor management","Slow-moving stock, or it's normal for that industry","The company has zero inventory","Revenue is definitely fraudulent"],
+     correct:1, explain:"Low turnover can flag slow-moving stock — but some industries naturally turn inventory slowly, so context matters."},
+    {q:"Days Sales Outstanding (DSO) measures:",
+     opts:["How many days inventory sits on shelves","How long it takes to collect cash after a sale","How often assets turn into revenue","Days until debt matures"],
+     correct:1, explain:"DSO = (AR ÷ Revenue) × 365 — the average collection period from sale to cash in hand."},
+    {q:"Asset Turnover = Revenue ÷ Total Assets tells you:",
+     opts:["Profit margin per sale","How efficiently assets generate revenue","The company's debt level","Cash on hand"],
+     correct:1, explain:"Asset Turnover shows how much revenue is generated per dollar of assets — an efficiency measure, not profitability or debt."}
+  ],
+  3:[
+    {q:"Net Margin differs from Operating Margin because Net Margin also accounts for:",
+     opts:["Only COGS","Interest and taxes, in addition to operating costs","Only marketing expenses","Nothing extra — they are identical"],
+     correct:1, explain:"Net Margin is the final layer after operating costs, interest, and taxes are all removed."},
+    {q:"ROE will typically exceed ROA when:",
+     opts:["The company has no debt","The company uses leverage (debt) to finance assets","Net income is negative","Revenue equals total assets exactly"],
+     correct:1, explain:"Equity Multiplier (Assets/Equity) > 1 when there's debt, which is why ROE > ROA under leverage."},
+    {q:"An Interest Coverage Ratio of 8.0x means:",
+     opts:["The company has 8 creditors","Operating income covers interest expense 8 times over","Interest rates are 8%","Debt is 8x larger than equity"],
+     correct:1, explain:"Interest Coverage = EBIT ÷ Interest Expense — 8.0x means ample cushion to service debt from operations."},
+    {q:"Which statement about debt is most accurate?",
+     opts:["Zero debt is always the ideal structure","Some leverage can be appropriate; the goal is a suitable level, not the minimum","High leverage is always dangerous regardless of context","Debt ratios measure profitability, not risk"],
+     correct:1, explain:"Debt isn't inherently bad — it can be cheaper than equity and create tax benefits; the right level depends on context."}
+  ],
+  4:[
+    {q:"The DuPont formula decomposes ROE into:",
+     opts:["Revenue, COGS, and taxes","Net Margin, Asset Turnover, and Equity Multiplier","Current Ratio and Quick Ratio","Gross Margin and Net Margin only"],
+     correct:1, explain:"ROE = Net Margin × Asset Turnover × Equity Multiplier — margin, efficiency, and leverage combined."},
+    {q:"Two companies with identical ROE can still differ significantly in:",
+     opts:["Nothing — identical ROE means identical risk","Underlying risk, depending on how much comes from leverage","Their industry classification only","Their tax rate exclusively"],
+     correct:1, explain:"Same ROE via high leverage is riskier than the same ROE via strong margins/efficiency — DuPont reveals this difference."},
+    {q:"Comparing a ratio only to its value one year prior is an example of:",
+     opts:["Industry benchmarking","Cross-sectional peer comparison","Trend (time-series) analysis","Market valuation analysis"],
+     correct:2, explain:"Tracking a company's own ratio over time is trend/time-series analysis, one of three key comparison types."},
+    {q:"Rising Days Sales Outstanding alongside flat revenue is best described as:",
+     opts:["A guaranteed sign of fraud","A potential red flag worth investigating further","Always meaningless noise","Proof the company is growing healthily"],
+     correct:1, explain:"It's a red flag pattern — possibly struggling customers or aggressive revenue recognition — that warrants deeper investigation, not an automatic fraud verdict."}
+  ]
+};
+
+/* ===================== RENDER QUIZZES ===================== */
+function renderQuiz(moduleNum){
+  const container = document.getElementById('quizBody'+moduleNum);
+  const questions = quizData[moduleNum];
+  container.innerHTML = '';
+  questions.forEach((q, qi)=>{
+    const qDiv = document.createElement('div');
+    qDiv.className='q-item';
+    qDiv.innerHTML = `<div class="q-text">${qi+1}. ${q.q}</div>
+      <div class="q-options" id="opts-${moduleNum}-${qi}"></div>
+      <div class="q-explain" id="explain-${moduleNum}-${qi}">${q.explain}</div>`;
+    container.appendChild(qDiv);
+    const optsDiv = qDiv.querySelector('.q-options');
+    q.opts.forEach((opt, oi)=>{
+      const optDiv = document.createElement('div');
+      optDiv.className='q-option';
+      optDiv.textContent = opt;
+      optDiv.onclick = ()=>selectOption(moduleNum, qi, oi);
+      optDiv.id = `opt-${moduleNum}-${qi}-${oi}`;
+      optsDiv.appendChild(optDiv);
+    });
+  });
+}
+let answers = {1:{},2:{},3:{},4:{}};
+function selectOption(m, qi, oi){
+  if(document.getElementById('summary'+m).classList.contains('shown')) return;
+  answers[m][qi]=oi;
+  quizData[m][qi].opts.forEach((_,idx)=>{
+    document.getElementById(`opt-${m}-${qi}-${idx}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${m}-${qi}-${oi}`).classList.add('selected');
+}
+function submitQuiz(m){
+  const questions = quizData[m];
+  if(Object.keys(answers[m]).length < questions.length){
+    alert('Please answer all questions before submitting.');
+    return;
+  }
+  let score = 0;
+  questions.forEach((q, qi)=>{
+    const chosen = answers[m][qi];
+    const correctEl = document.getElementById(`opt-${m}-${qi}-${q.correct}`);
+    const chosenEl = document.getElementById(`opt-${m}-${qi}-${chosen}`);
+    if(chosen === q.correct){
+      score++;
+      chosenEl.classList.add('correct');
+    } else {
+      chosenEl.classList.add('incorrect');
+      correctEl.classList.add('correct');
+    }
+    document.getElementById(`explain-${m}-${qi}`).classList.add('shown');
+  });
+  document.getElementById('submitBtn'+m).style.display='none';
+  const pct = Math.round((score/questions.length)*100);
+  document.getElementById('score'+m).textContent = score+'/'+questions.length+' ('+pct+'%)';
+  document.getElementById('summaryText'+m).textContent = pct>=75 ?
+    'Great work — you\\'ve mastered this module\\'s core concepts.' :
+    'Review the explanations above, then continue — you can revisit this module anytime.';
+  document.getElementById('summary'+m).classList.add('shown');
+}
+
+/* init */
+for(let i=1;i<=4;i++) renderQuiz(i);
+calcLiquidity();
+calcLeverage();
+calcDupont();
+updateProgressPill();
+</script>
+</body>
+</html>
