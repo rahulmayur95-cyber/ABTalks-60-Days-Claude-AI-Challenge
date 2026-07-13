@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Rolling Forecast — FP&A Workflow Ledger</title>
+<style>
+  :root{
+    --ink:#0d1512;
+    --paper:#f4f1e8;
+    --paper-dim:#e9e4d4;
+    --ledger-line:#c9c2aa;
+    --teal:#1f5f5b;
+    --teal-deep:#123c39;
+    --gold:#b8863b;
+    --brick:#9c3b2e;
+    --ink-soft:#3c4440;
+    --ink-faint:#6b7570;
+    --white:#fffdf7;
+    --shadow: 0 8px 24px rgba(13,21,18,0.12);
+    --radius: 3px;
+    --serif: 'Iowan Old Style','Palatino Linotype', Palatino, Georgia, serif;
+    --mono: 'SF Mono','JetBrains Mono', Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  [data-theme="dark"]{
+    --ink:#f4f1e8;
+    --paper:#111815;
+    --paper-dim:#161f1b;
+    --ledger-line:#2b3833;
+    --teal:#4fb3ac;
+    --teal-deep:#2c6b66;
+    --gold:#d9a44f;
+    --brick:#e2695a;
+    --ink-soft:#c9d1cb;
+    --ink-faint:#8a9791;
+    --white:#0a0f0d;
+    --shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    transition:background .35s ease, color .35s ease;
+    line-height:1.55;
+  }
+  ::selection{background:var(--gold); color:var(--white);}
+  a{color:var(--teal);}
+  .container{max-width:1180px; margin:0 auto; padding:0 28px;}
+
+  /* ===== Top bar ===== */
+  .topbar{
+    position:sticky; top:0; z-index:100;
+    background:var(--paper); border-bottom:1px solid var(--ledger-line);
+    backdrop-filter:blur(6px);
+  }
+  .topbar-inner{
+    max-width:1180px; margin:0 auto; padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand .mark{
+    font-family:var(--serif); font-weight:700; font-size:1.15rem; letter-spacing:.02em;
+  }
+  .brand .sub{font-family:var(--mono); font-size:.68rem; color:var(--ink-faint); letter-spacing:.08em; text-transform:uppercase;}
+  .topbar-actions{display:flex; gap:10px; align-items:center;}
+  .btn{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.04em; text-transform:uppercase;
+    border:1px solid var(--ink); background:transparent; color:var(--ink);
+    padding:8px 14px; border-radius:var(--radius); cursor:pointer;
+    transition:all .2s ease;
+  }
+  .btn:hover{background:var(--ink); color:var(--paper);}
+  .btn.primary{background:var(--teal); border-color:var(--teal); color:var(--white);}
+  .btn.primary:hover{background:var(--teal-deep); border-color:var(--teal-deep);}
+  .icon-btn{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--ledger-line);
+    background:var(--paper-dim); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:16px; transition:transform .2s ease;
+  }
+  .icon-btn:hover{transform:rotate(20deg);}
+
+  /* ===== Progress rail ===== */
+  .progress-rail{
+    height:3px; background:var(--ledger-line); position:relative; overflow:hidden;
+  }
+  .progress-fill{height:100%; background:linear-gradient(90deg,var(--teal),var(--gold)); width:0%; transition:width .4s ease;}
+
+  /* ===== Hero ===== */
+  .hero{
+    padding:72px 0 48px; position:relative; overflow:hidden;
+    border-bottom:1px solid var(--ledger-line);
+  }
+  .hero-grid{
+    position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image: repeating-linear-gradient(var(--ledger-line) 0 1px, transparent 1px 38px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  }
+  .hero-eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--teal); display:flex; align-items:center; gap:10px; margin-bottom:18px;
+  }
+  .hero-eyebrow::before{content:''; width:26px; height:1px; background:var(--teal);}
+  .hero h1{
+    font-family:var(--serif); font-weight:700; font-size:clamp(2.2rem,5vw,3.6rem);
+    margin:0 0 18px; letter-spacing:-.01em; max-width:15ch; position:relative;
+  }
+  .hero h1 em{font-style:italic; color:var(--teal);}
+  .hero-lede{
+    font-size:1.08rem; color:var(--ink-soft); max-width:56ch; margin-bottom:32px;
+  }
+  .hero-stats{display:flex; gap:0; flex-wrap:wrap; border-top:1px solid var(--ledger-line);}
+  .hstat{
+    flex:1; min-width:150px; padding:18px 22px 0; border-right:1px solid var(--ledger-line);
+  }
+  .hstat:last-child{border-right:none;}
+  .hstat .num{font-family:var(--mono); font-size:1.5rem; color:var(--gold); font-weight:600;}
+  .hstat .lbl{font-size:.78rem; color:var(--ink-faint); margin-top:2px;}
+
+  /* ===== Section shell ===== */
+  section{padding:56px 0;}
+  .section-head{margin-bottom:32px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap;}
+  .section-head h2{
+    font-family:var(--serif); font-size:1.9rem; margin:0; font-weight:700;
+  }
+  .section-head .tag{
+    font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-faint);
+  }
+  .section-desc{color:var(--ink-soft); max-width:70ch; margin-top:8px;}
+
+  /* ===== Stage timeline nav ===== */
+  .stage-nav{
+    display:flex; gap:2px; margin-bottom:8px; overflow-x:auto; border:1px solid var(--ledger-line);
+    background:var(--paper-dim);
+  }
+  .stage-nav button{
+    flex:1; min-width:130px; background:transparent; border:none; border-right:1px solid var(--ledger-line);
+    padding:14px 10px; cursor:pointer; font-family:var(--mono); font-size:.68rem; color:var(--ink-faint);
+    text-transform:uppercase; letter-spacing:.05em; transition:all .2s ease; text-align:left;
+  }
+  .stage-nav button:last-child{border-right:none;}
+  .stage-nav button .day{display:block; font-family:var(--serif); font-size:1.1rem; color:var(--ink); font-style:normal; margin-bottom:3px;}
+  .stage-nav button.active{background:var(--teal); color:var(--white);}
+  .stage-nav button.active .day{color:var(--white);}
+  .stage-nav button.done{color:var(--teal);}
+  .stage-nav button.done .day::after{content:' ✓';}
+
+  .stage-panel{display:none; border:1px solid var(--ledger-line); border-top:none; background:var(--white); padding:36px;}
+  .stage-panel.active{display:block; animation:fadein .4s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .stage-title-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:10px;}
+  .stage-title-row h3{font-family:var(--serif); font-size:1.55rem; margin:0;}
+  .stage-time{font-family:var(--mono); font-size:.75rem; color:var(--gold); border:1px solid var(--gold); padding:4px 10px; border-radius:20px;}
+  .stage-objective{color:var(--ink-soft); margin-bottom:26px; font-size:.98rem; max-width:75ch;}
+
+  .field-grid{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+  @media (max-width:760px){.field-grid{grid-template-columns:1fr;}}
+
+  .field{margin-bottom:22px;}
+  .field h4{
+    font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--teal); margin:0 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .field h4::before{content:''; width:14px; height:1px; background:var(--teal);}
+  .field ul{margin:0; padding-left:18px;}
+  .field li{margin-bottom:6px; font-size:.94rem;}
+
+  .tool-card{
+    border:1px solid var(--ledger-line); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;
+    background:var(--paper-dim); position:relative;
+  }
+  .tool-card .tname{font-weight:700; font-family:var(--serif); font-size:1.05rem;}
+  .tool-card .twhy{font-size:.88rem; color:var(--ink-soft); margin-top:4px;}
+  .tool-card .talt{font-size:.78rem; color:var(--ink-faint); margin-top:8px; font-family:var(--mono);}
+  .badge{
+    position:absolute; top:14px; right:16px; font-family:var(--mono); font-size:.62rem;
+    text-transform:uppercase; background:var(--teal); color:var(--white); padding:2px 8px; border-radius:12px;
+  }
+
+  .prompt-box{
+    background:var(--ink); color:var(--paper); font-family:var(--mono); font-size:.82rem;
+    padding:16px 18px; border-radius:var(--radius); margin-bottom:10px; position:relative;
+    white-space:pre-wrap; line-height:1.6;
+  }
+  [data-theme="dark"] .prompt-box{background:#000;}
+  .copy-btn{
+    position:absolute; top:10px; right:10px; background:var(--teal); color:var(--white); border:none;
+    font-family:var(--mono); font-size:.62rem; text-transform:uppercase; padding:4px 9px; border-radius:10px; cursor:pointer;
+  }
+
+  .mistakes{background:rgba(156,59,46,.08); border-left:3px solid var(--brick); padding:14px 18px; border-radius:var(--radius);}
+  .mistakes li{color:var(--ink-soft);}
+  .practices{background:rgba(31,95,91,.08); border-left:3px solid var(--teal); padding:14px 18px; border-radius:var(--radius);}
+
+  .checklist label{display:flex; gap:10px; align-items:flex-start; font-size:.92rem; margin-bottom:8px; cursor:pointer;}
+  .checklist input{margin-top:3px; accent-color:var(--teal);}
+
+  .notes-box{
+    width:100%; min-height:80px; border:1px dashed var(--ledger-line); background:transparent; color:var(--ink);
+    font-family:var(--sans); font-size:.9rem; padding:12px; border-radius:var(--radius); resize:vertical;
+  }
+  .bookmark-row{display:flex; align-items:center; gap:10px; margin-top:10px;}
+  .bookmark-row .icon-btn{width:30px; height:30px; font-size:13px;}
+
+  /* ===== Decision tree ===== */
+  .tree{border:1px solid var(--ledger-line); background:var(--white); padding:32px;}
+  .tree-node{
+    border:1px solid var(--ink); border-radius:var(--radius); padding:14px 18px; margin:0 auto 14px;
+    max-width:520px; text-align:center; font-size:.92rem; position:relative; background:var(--paper-dim);
+    cursor:default;
+  }
+  .tree-node.q{background:var(--teal); color:var(--white); border-color:var(--teal); font-weight:600;}
+  .tree-branches{display:flex; gap:20px; justify-content:center; margin:0 0 20px; flex-wrap:wrap;}
+  .tree-branch{flex:1; min-width:220px; max-width:340px;}
+  .tree-branch-label{
+    text-align:center; font-family:var(--mono); font-size:.7rem; text-transform:uppercase; color:var(--gold);
+    margin-bottom:8px; letter-spacing:.06em;
+  }
+  .connector{width:1px; height:18px; background:var(--ledger-line); margin:0 auto;}
+
+  /* ===== Comparison table ===== */
+  table.compare{width:100%; border-collapse:collapse; font-size:.9rem;}
+  table.compare th, table.compare td{border:1px solid var(--ledger-line); padding:12px 14px; text-align:left;}
+  table.compare th{background:var(--paper-dim); font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em;}
+  table.compare td.best{background:rgba(31,95,91,.08); font-weight:600;}
+
+  /* ===== Diagram (flow) ===== */
+  .flow{display:flex; align-items:center; overflow-x:auto; padding:24px 4px; gap:0;}
+  .flow-step{
+    min-width:150px; border:1px solid var(--ink); background:var(--paper-dim); border-radius:var(--radius);
+    padding:16px; text-align:center; font-size:.85rem; position:relative;
+  }
+  .flow-step .fn{font-family:var(--mono); color:var(--gold); font-size:.7rem; display:block; margin-bottom:4px;}
+  .flow-arrow{min-width:36px; text-align:center; color:var(--ink-faint); font-size:1.2rem;}
+
+  /* ===== Footer summary sections ===== */
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  @media (max-width:860px){.grid-3{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--ledger-line); background:var(--white); padding:24px; border-radius:var(--radius);}
+  .panel h3{font-family:var(--serif); margin:0 0 14px; font-size:1.15rem;}
+  .pill{
+    display:inline-block; font-family:var(--mono); font-size:.72rem; background:var(--paper-dim);
+    border:1px solid var(--ledger-line); padding:4px 10px; border-radius:14px; margin:0 6px 6px 0;
+  }
+
+  footer{border-top:1px solid var(--ledger-line); padding:36px 0; text-align:center; color:var(--ink-faint); font-size:.82rem;}
+
+  @media print{
+    .topbar, .stage-nav, .progress-rail, .icon-btn, .btn, footer{display:none !important;}
+    .stage-panel{display:block !important; break-inside:avoid; border:none; padding:0 0 24px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="mark">The Rolling Forecast</span>
+      <span class="sub">FP&A Workflow Ledger</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="printBtn">Print Guide</button>
+      <button class="btn primary" id="resetBtn">Reset Progress</button>
+      <div class="icon-btn" id="themeToggle" title="Toggle dark mode">☾</div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="container">
+    <div class="hero-eyebrow">Corporate FP&A · Monthly Cycle</div>
+    <h1>Close the books.<br>Then <em>re-forecast the future.</em></h1>
+    <p class="hero-lede">An end-to-end, AI-assisted workflow for running the monthly rolling forecast and variance analysis cycle — from actuals ingestion through the board-ready variance narrative. Six stages, mapped tool-by-tool, prompt-by-prompt.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="num">6</div><div class="lbl">Workflow stages</div></div>
+      <div class="hstat"><div class="num">~5–7</div><div class="lbl">Business days per cycle</div></div>
+      <div class="hstat"><div class="num" id="heroProgress">0%</div><div class="lbl">Your progress</div></div>
+      <div class="hstat"><div class="num">12mo</div><div class="lbl">Rolling horizon</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="container" id="overview">
+  <div class="section-head">
+    <h2>Cycle Overview</h2>
+    <span class="tag">Planning → Execution</span>
+  </div>
+  <p class="section-desc">This is the process a corporate FP&A team runs every month: pull actuals, reconcile against the prior forecast, explain the variance, rebuild the 12-month rolling view, and deliver a narrative leadership can act on. Click through each stage below — objectives, tasks, tools, prompts, and pitfalls are all mapped.</p>
+
+  <div class="flow" id="flowDiagram"></div>
+</section>
+
+<section class="container" id="stages">
+  <div class="section-head">
+    <h2>The Six Stages</h2>
+    <span class="tag">Click a stage · check off tasks as you go</span>
+  </div>
+  <div class="stage-nav" id="stageNav"></div>
+  <div id="stagePanels"></div>
+</section>
+
+<section class="container" id="decisionTree">
+  <div class="section-head">
+    <h2>Decision Tree: Which Forecasting Approach?</h2>
+    <span class="tag">Interactive</span>
+  </div>
+  <p class="section-desc">Not every line item deserves the same modeling rigor. Use this to decide where to spend your time this cycle.</p>
+  <div class="tree" id="treeContainer"></div>
+</section>
+
+<section class="container" id="toolCompare">
+  <div class="section-head">
+    <h2>AI Tool Comparison</h2>
+    <span class="tag">For the forecast rebuild + narrative</span>
+  </div>
+  <table class="compare" id="compareTable"></table>
+</section>
+
+<section class="container" id="summary">
+  <div class="section-head"><h2>Workflow Summary</h2></div>
+  <div class="grid-3">
+    <div class="panel">
+      <h3>Recommended AI Stack</h3>
+      <div id="stackList"></div>
+    </div>
+    <div class="panel">
+      <h3>Learning Resources</h3>
+      <div id="learnList"></div>
+    </div>
+    <div class="panel">
+      <h3>Communities</h3>
+      <div id="commList"></div>
+    </div>
+  </div>
+  <div class="grid-3" style="margin-top:22px;">
+    <div class="panel">
+      <h3>Search Keywords</h3>
+      <div id="kwList"></div>
+    </div>
+    <div class="panel">
+      <h3>Additional AI Prompts</h3>
+      <div id="promptList"></div>
+    </div>
+    <div class="panel">
+      <h3>Future Automation Opportunities</h3>
+      <ul id="futureList" style="padding-left:18px; margin:0; font-size:.92rem;"></ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built for Corporate FP&A teams · Progress and notes are saved locally in your browser, nowhere else.
+</footer>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'fpa_workflow_state_v1';
+  const THEME_KEY = 'fpa_workflow_theme_v1';
+
+  // ---------- THEME ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.textContent = t === 'dark' ? '☀' : '☾';
+  }
+  let savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(savedTheme);
+  themeToggle.addEventListener('click', ()=>{
+    savedTheme = savedTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, savedTheme);
+    applyTheme(savedTheme);
+  });
+
+  // ---------- DATA ----------
+  const stages = [
+    {
+      id:'actuals',
+      day:'Day 1–2',
+      title:'Ingest & Reconcile Actuals',
+      objective:'Pull closed-period actuals from the GL/ERP, reconcile to the prior forecast, and flag data quality issues before any analysis begins.',
+      time:'1–2 days',
+      tasks:[
+        'Export trial balance and GL detail from ERP for the closed month',
+        'Reconcile actuals to last month\'s forecast at account/cost-center level',
+        'Flag missing accruals, misclassifications, or timing differences',
+        'Normalize chart of accounts against the forecast model\'s structure'
+      ],
+      tools:[
+        {name:'ChatGPT (GPT-5 class) w/ Code Interpreter', why:'Fast at reconciling two large exports (GL vs. forecast) and surfacing mismatches in plain language, with a spreadsheet you can hand off.', alt:'Claude with file analysis'},
+        {name:'Claude (Sonnet/Opus)', why:'Strong at parsing messy, inconsistent account naming across systems and explaining the "why" behind a variance line, not just the number.', alt:'ChatGPT Code Interpreter'},
+        {name:'Datarails / Vena', why:'Purpose-built FP&A platforms with native ERP connectors — reduces manual export/import entirely for recurring cycles.', alt:'Anaplan, Cube'}
+      ],
+      prompts:[
+        'I have two CSVs: this month\'s GL trial balance and last month\'s forecast by account and cost center. Match them on account code, flag any account present in one file but not the other, and list the 15 largest dollar variances with the account name.',
+        'Review this GL export for likely misclassifications — entries that look booked to the wrong account based on their description. Explain your reasoning for each flag.'
+      ],
+      bestPractices:['Lock the actuals data before analysis starts — no late journal entries mid-cycle','Use a consistent account mapping table so AI outputs stay comparable month over month','Timestamp and version every export you feed to a model'],
+      mistakes:['Reconciling before the close is truly final, causing rework','Letting the AI "fix" numbers instead of flagging them for human review','Feeding an entire year of GL detail when only the current month is needed — wastes context and increases error risk'],
+      outputs:['Clean, reconciled actuals file mapped to forecast structure','A flagged list of data quality issues with owners assigned'],
+      efficiency:'Build a reusable mapping template once; every future month becomes a find-and-replace of account codes rather than a rebuild.'
+    },
+    {
+      id:'variance',
+      day:'Day 2–3',
+      title:'Variance Analysis',
+      objective:'Quantify actual-vs-forecast variance by line item and business driver, and separate real business signal from noise or timing.',
+      time:'1 day',
+      tasks:[
+        'Calculate $ and % variance by account, department, and driver',
+        'Segment variance into volume, price/rate, and timing components',
+        'Rank variances by materiality threshold (e.g., >5% or >$25K)',
+        'Draft first-pass explanations for the top 10–15 variances'
+      ],
+      tools:[
+        {name:'Claude (Opus/Sonnet)', why:'Best at turning a table of variance numbers into a coherent, cause-oriented narrative draft that a human analyst can quickly edit rather than write from scratch.', alt:'ChatGPT GPT-5'},
+        {name:'Excel / Google Sheets + Copilot or Gemini', why:'Keeps the variance waterfall inside the tool finance already trusts, with AI assisting on formulas and driver decomposition in place.', alt:'Julius AI for ad-hoc statistical decomposition'},
+        {name:'Julius AI', why:'Good for quick statistical decomposition (volume/price/mix) when you want a chart and the math shown, not just a number.', alt:'Claude with code execution'}
+      ],
+      prompts:[
+        'Here is a table of budget vs. actual by account for [Department]. For each line over 5% variance, draft a one-sentence plain-English explanation of the likely driver, and mark which ones need input from the department owner because the cause isn\'t clear from the data alone.',
+        'Decompose this revenue variance into volume, price, and mix effects given: budgeted units, actual units, budgeted ASP, actual ASP. Show the formula and the dollar impact of each component.'
+      ],
+      bestPractices:['Always separate "explained by the business" from "explained by AI guessing" — mark AI-drafted explanations as drafts until confirmed by the budget owner','Use a consistent materiality threshold across departments so leadership isn\'t comparing apples to oranges','Keep a variance driver taxonomy (volume/price/timing/one-time) so trends are comparable month over month'],
+      mistakes:['Accepting an AI-generated variance explanation without confirming it with the department that owns the number','Analyzing every variance with equal rigor instead of focusing on material ones','Conflating a timing variance (will reverse next month) with a true run-rate change'],
+      outputs:['Variance waterfall by account/department','Ranked, annotated list of material variances with draft explanations'],
+      efficiency:'Ask the model to output variances in a fixed table schema every month — this makes it trivial to diff against last month\'s file and spot recurring offenders.'
+    },
+    {
+      id:'signal',
+      day:'Day 3',
+      title:'Signal vs. Noise Triage',
+      objective:'Decide which variances change the forward-looking forecast and which are one-time or timing noise that shouldn\'t move the model.',
+      time:'0.5 day',
+      tasks:[
+        'Interview or email department owners on unexplained material variances',
+        'Classify each material variance: structural (affects future months) vs. one-time',
+        'Update assumptions log with any changed business drivers',
+        'Document decisions so the forecast rebuild has a clear audit trail'
+      ],
+      tools:[
+        {name:'Claude (Sonnet)', why:'Useful for drafting concise, non-accusatory questions to send department owners about their variances, and for summarizing their replies into structured notes.', alt:'ChatGPT'},
+        {name:'Otter.ai / Fireflies', why:'If variance discussions happen in live budget review meetings, auto-transcribes and summarizes action items per department.', alt:'Notion AI meeting notes'},
+        {name:'Notion AI or Coda AI', why:'Keeps a living assumptions log that AI can help summarize and flag when an assumption hasn\'t been revisited in 3+ months.', alt:'Confluence with AI add-on'}
+      ],
+      prompts:[
+        'Draft a short, friendly email to the Sales department head asking why marketing spend was 18% over budget in [Month], and whether this is expected to continue. Keep it under 80 words and non-accusatory in tone.',
+        'Given these meeting notes from budget review calls, extract each variance discussed, whether the owner classified it as one-time or ongoing, and any new assumption that should update the forecast.'
+      ],
+      bestPractices:['Get owner sign-off in writing (even Slack/email) before changing a forecast driver based on their explanation','Keep the assumptions log dated and versioned — it becomes your audit trail for the annual budget cycle too','Distinguish "we don\'t know yet" from "confirmed one-time" — don\'t force a classification prematurely'],
+      mistakes:['Skipping owner conversations and letting the AI infer intent from numbers alone','Updating the rolling forecast based on a single month of data without checking if it\'s a trend','Losing the reasoning trail — six months later nobody remembers why an assumption changed'],
+      outputs:['Updated assumptions log','Classified variance list (structural vs. one-time) ready for forecast rebuild'],
+      efficiency:'Standardize the owner outreach email so it goes out same-day every cycle — response lag is usually the single biggest bottleneck in this stage.'
+    },
+    {
+      id:'rebuild',
+      day:'Day 4',
+      title:'Rebuild the 12-Month Rolling Forecast',
+      objective:'Roll the actuals into history, update assumptions from the triage step, and regenerate the forward 12-month view.',
+      time:'1 day',
+      tasks:[
+        'Replace forecasted month with actuals in the model',
+        'Add a new month to the end of the rolling 12-month window',
+        'Apply updated assumptions (growth rates, headcount, pricing) to remaining forecast months',
+        'Run sensitivity checks on the 2–3 highest-impact assumptions'
+      ],
+      tools:[
+        {name:'Excel/Google Sheets + Copilot/Gemini', why:'The forecast model itself almost always lives here — AI copilots help write and audit formulas in place without migrating the model.', alt:'Anaplan for larger orgs'},
+        {name:'ChatGPT (GPT-5, Code Interpreter)', why:'Good for building or checking a Python-based sensitivity/scenario model outside the spreadsheet when you need to stress-test multiple assumptions at once.', alt:'Claude with code execution'},
+        {name:'Mosaic / Pigment / Cube', why:'Dedicated FP&A planning platforms with rolling-forecast built in — reduces manual formula rebuilding month over month.', alt:'Datarails'}
+      ],
+      prompts:[
+        'Here are my updated assumptions: revenue growth 4% MoM through Q4, headcount +3 in September, COGS ratio holding at 42%. Write the Excel formulas to roll these into a 12-month forecast starting from [current actuals row], referencing the assumptions in a separate tab.',
+        'Run a sensitivity analysis: show forecasted EBITDA if revenue growth is 2%, 4%, and 6% MoM, holding all other assumptions constant. Present as a simple table.'
+      ],
+      bestPractices:['Never let AI write formulas directly into the production model without review — use a sandbox tab first','Keep assumptions in a single dedicated tab/section so every driver change is traceable','Re-run sensitivity on the 2–3 assumptions with the highest EBITDA impact, not all of them'],
+      mistakes:['Hardcoding updated numbers instead of updating the driver/assumption that feeds the formula','Losing formula integrity by pasting AI-generated values over formula cells','Forgetting to extend the rolling window — leaving an 11-month or 13-month forecast by accident'],
+      outputs:['Updated 12-month rolling forecast model','Sensitivity table for key assumptions'],
+      efficiency:'Maintain a single "assumptions" tab that every formula references — this turns a full rebuild into a 20-minute assumption update most months.'
+    },
+    {
+      id:'narrative',
+      day:'Day 5',
+      title:'Build the Variance Narrative & Deck',
+      objective:'Translate the numbers into a concise, decision-useful story for leadership — what happened, why, and what it means going forward.',
+      time:'1 day',
+      tasks:[
+        'Draft executive summary: 3–5 sentence "so what" of the month',
+        'Build variance bridge/waterfall visual for headline metrics (revenue, EBITDA)',
+        'Write department-level commentary using triage stage findings',
+        'Design board/leadership slide deck or one-pager'
+      ],
+      tools:[
+        {name:'Claude (Opus)', why:'Best-in-class for turning structured variance data into an executive narrative that reads like an analyst wrote it, with appropriate hedging on uncertain items.', alt:'ChatGPT GPT-5'},
+        {name:'Gamma or SlidesGPT', why:'Fast AI slide generation from an outline or bullet draft — good for turning the narrative into a presentable deck without manual slide design.', alt:'Canva Magic Design, Beautiful.ai'},
+        {name:'Claude/ChatGPT + native chart export', why:'Generate the variance waterfall chart programmatically for a clean, on-brand visual rather than a default Excel chart.', alt:'Flourish for interactive board dashboards'}
+      ],
+      prompts:[
+        'Using this variance data and assumptions log, write a 4-sentence executive summary for the CFO covering: overall performance vs. forecast, the single biggest driver, one risk to watch, and one thing trending better than expected. Plain language, no jargon.',
+        'Turn this outline into a 6-slide board deck structure: title, executive summary, revenue bridge, EBITDA bridge, department highlights, forward outlook. Just give me the slide titles and 3 bullet points each.'
+      ],
+      bestPractices:['Lead with the "so what," not the numbers — leadership wants implications first, detail second','Keep department commentary to 2–3 sentences each; put detail in an appendix','Have the narrative reviewed by the department owners before it reaches leadership — no surprises'],
+      mistakes:['Writing a narrative that restates the numbers instead of explaining them','Burying the biggest risk or miss in the middle of the deck instead of the summary','Using AI-generated language that sounds generic ("strong performance across the board") instead of specific and grounded'],
+      outputs:['Executive summary (written)','Variance bridge visuals','Leadership-ready deck or one-pager'],
+      efficiency:'Keep a standing slide template — only the numbers and 4–5 sentences of commentary should change month to month.'
+    },
+    {
+      id:'deliver',
+      day:'Day 5–6',
+      title:'Review, Deliver & Archive',
+      objective:'Get sign-off, distribute to stakeholders, and archive the cycle\'s model, assumptions, and narrative for auditability and next month\'s starting point.',
+      time:'0.5–1 day',
+      tasks:[
+        'Internal FP&A review / sanity check against last cycle',
+        'CFO or finance leadership review and sign-off',
+        'Distribute deck and model access to leadership and department heads',
+        'Archive model version, assumptions log, and narrative in a dated folder'
+      ],
+      tools:[
+        {name:'Claude or ChatGPT', why:'Useful for a final QA pass — asking the model to sanity-check the narrative against the underlying numbers for internal contradictions before it goes out.', alt:'Manual peer review'},
+        {name:'Google Drive / SharePoint + version history', why:'Simple, reliable archiving with built-in version control — no need for specialized tooling at most company sizes.', alt:'Dedicated FP&A platform version history (Datarails, Vena)'},
+        {name:'Slack/Email AI drafting (Claude/ChatGPT)', why:'Drafts the distribution message and highlights for non-finance stakeholders who need the headline, not the full deck.', alt:'Native email client AI features'}
+      ],
+      prompts:[
+        'Review this executive summary against the underlying variance table and flag any statement that isn\'t directly supported by the data, or any number that seems inconsistent.',
+        'Write a 3-sentence Slack message to the leadership team summarizing this month\'s forecast update, with a link placeholder for the full deck, in a direct and confident tone.'
+      ],
+      bestPractices:['Archive the exact model version alongside the assumptions log used to produce it — future you will need this','Use a consistent, dated file naming convention (e.g., 2026-07_rolling_forecast_v1)','Close the loop with department owners — send them the final narrative, not just leadership'],
+      mistakes:['Archiving only the final deck and losing the underlying model/assumptions trail','Skipping the internal sanity check and sending numbers straight from the model to leadership','Not closing the loop with department heads, causing surprise or distrust next cycle'],
+      outputs:['Signed-off leadership deck, distributed','Archived model, assumptions log, and narrative in dated folder'],
+      efficiency:'Automate the archive step with a simple folder-naming template and a recurring calendar reminder — removes the "forgot to file it" failure mode entirely.'
+    }
+  ];
+
+  // ---------- STATE ----------
+  let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  state.checks = state.checks || {};
+  state.notes = state.notes || {};
+  state.bookmarks = state.bookmarks || {};
+  state.activeStage = state.activeStage || stages[0].id;
+
+  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateProgress(); }
+
+  // ---------- BUILD FLOW DIAGRAM ----------
+  const flowEl = document.getElementById('flowDiagram');
+  stages.forEach((s,i)=>{
+    const step = document.createElement('div');
+    step.className='flow-step';
+    step.innerHTML = `<span class="fn">${s.day}</span>${s.title}`;
+    step.addEventListener('click', ()=> setActiveStage(s.id));
+    flowEl.appendChild(step);
+    if(i < stages.length-1){
+      const arrow = document.createElement('div');
+      arrow.className='flow-arrow';
+      arrow.textContent='→';
+      flowEl.appendChild(arrow);
+    }
+  });
+
+  // ---------- BUILD STAGE NAV + PANELS ----------
+  const navEl = document.getElementById('stageNav');
+  const panelsEl = document.getElementById('stagePanels');
+
+  function stageComplete(s){
+    const total = s.tasks.length;
+    let done = 0;
+    for(let i=0;i<total;i++){ if(state.checks[s.id+'_'+i]) done++; }
+    return {done, total};
+  }
+
+  function renderNav(){
+    navEl.innerHTML='';
+    stages.forEach(s=>{
+      const b = document.createElement('button');
+      const {done,total} = stageComplete(s);
+      b.className = (s.id===state.activeStage?'active ':'') + (done===total?'done':'');
+      b.innerHTML = `<span class="day">${s.day}</span>${s.title}`;
+      b.addEventListener('click', ()=> setActiveStage(s.id));
+      navEl.appendChild(b);
+    });
+  }
+
+  function renderPanels(){
+    panelsEl.innerHTML='';
+    stages.forEach(s=>{
+      const p = document.createElement('div');
+      p.className='stage-panel' + (s.id===state.activeStage?' active':'');
+      p.id='panel-'+s.id;
+
+      const tasksHtml = s.tasks.map((t,i)=>{
+        const key = s.id+'_'+i;
+        const checked = state.checks[key] ? 'checked' : '';
+        return `<label><input type="checkbox" data-key="${key}" ${checked}> ${t}</label>`;
+      }).join('');
+
+      const toolsHtml = s.tools.map(t=>`
+        <div class="tool-card">
+          <div class="tname">${t.name}</div>
+          <div class="twhy">${t.why}</div>
+          <div class="talt">Alternative → ${t.alt}</div>
+        </div>`).join('');
+
+      const promptsHtml = s.prompts.map(pr=>`
+        <div class="prompt-box">${pr}<button class="copy-btn" data-copy="${encodeURIComponent(pr)}">Copy</button></div>
+      `).join('');
+
+      const bpHtml = s.bestPractices.map(x=>`<li>${x}</li>`).join('');
+      const mkHtml = s.mistakes.map(x=>`<li>${x}</li>`).join('');
+      const outHtml = s.outputs.map(x=>`<li>${x}</li>`).join('');
+
+      p.innerHTML = `
+        <div class="stage-title-row">
+          <h3>${s.title}</h3>
+          <span class="stage-time">⏱ ${s.time}</span>
+        </div>
+        <p class="stage-objective">${s.objective}</p>
+
+        <div class="field-grid">
+          <div>
+            <div class="field">
+              <h4>Tasks</h4>
+              <div class="checklist">${tasksHtml}</div>
+            </div>
+            <div class="field">
+              <h4>Best AI Tools</h4>
+              ${toolsHtml}
+            </div>
+            <div class="field">
+              <h4>Prompt Examples</h4>
+              ${promptsHtml}
+            </div>
+          </div>
+          <div>
+            <div class="field">
+              <h4>Best Practices</h4>
+              <ul class="practices">${bpHtml}</ul>
+            </div>
+            <div class="field">
+              <h4>Common Mistakes</h4>
+              <ul class="mistakes">${mkHtml}</ul>
+            </div>
+            <div class="field">
+              <h4>Expected Outputs</h4>
+              <ul>${outHtml}</ul>
+            </div>
+            <div class="field">
+              <h4>Efficiency Tip</h4>
+              <p style="font-size:.92rem; color:var(--ink-soft);">${s.efficiency}</p>
+            </div>
+            <div class="field">
+              <h4>Your Notes</h4>
+              <textarea class="notes-box" data-stage="${s.id}" placeholder="Jot down anything specific to your org here...">${state.notes[s.id]||''}</textarea>
+              <div class="bookmark-row">
+                <div class="icon-btn bookmark-btn" data-stage="${s.id}" title="Bookmark this stage">${state.bookmarks[s.id]?'★':'☆'}</div>
+                <span style="font-size:.78rem; color:var(--ink-faint);">Bookmark for quick reference</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      panelsEl.appendChild(p);
+    });
+
+    // wire checkboxes
+    panelsEl.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        state.checks[cb.dataset.key] = cb.checked;
+        save(); renderNav();
+      });
+    });
+    // wire copy buttons
+    panelsEl.querySelectorAll('.copy-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const text = decodeURIComponent(btn.dataset.copy);
+        navigator.clipboard?.writeText(text).then(()=>{
+          const old = btn.textContent; btn.textContent='Copied';
+          setTimeout(()=>btn.textContent=old, 1400);
+        });
+      });
+    });
+    // wire notes
+    panelsEl.querySelectorAll('.notes-box').forEach(ta=>{
+      ta.addEventListener('input', ()=>{
+        state.notes[ta.dataset.stage] = ta.value;
+        save();
+      });
+    });
+    // wire bookmarks
+    panelsEl.querySelectorAll('.bookmark-btn').forEach(bm=>{
+      bm.addEventListener('click', ()=>{
+        const id = bm.dataset.stage;
+        state.bookmarks[id] = !state.bookmarks[id];
+        bm.textContent = state.bookmarks[id] ? '★' : '☆';
+        save();
+      });
+    });
+  }
+
+  function setActiveStage(id){
+    state.activeStage = id;
+    save();
+    renderNav();
+    document.querySelectorAll('.stage-panel').forEach(p=> p.classList.toggle('active', p.id === 'panel-'+id));
+    document.getElementById('stages').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function updateProgress(){
+    let totalTasks=0, doneTasks=0;
+    stages.forEach(s=>{ totalTasks+=s.tasks.length; const {done}=stageComplete(s); doneTasks+=done; });
+    const pct = totalTasks ? Math.round((doneTasks/totalTasks)*100) : 0;
+    document.getElementById('progressFill').style.width = pct+'%';
+    document.getElementById('heroProgress').textContent = pct+'%';
+  }
+
+  renderNav(); renderPanels(); updateProgress();
+
+  // ---------- DECISION TREE ----------
+  const treeEl = document.getElementById('treeContainer');
+  treeEl.innerHTML = `
+    <div class="tree-node q">Is this line item &gt;5% of total revenue or costs?</div>
+    <div class="connector"></div>
+    <div class="tree-branches">
+      <div class="tree-branch">
+        <div class="tree-branch-label">Yes — material</div>
+        <div class="tree-node q">Is the driver volume, price, or truly unpredictable (e.g. FX, one-off)?</div>
+        <div class="connector"></div>
+        <div class="tree-branches">
+          <div class="tree-branch">
+            <div class="tree-branch-label">Volume / Price driven</div>
+            <div class="tree-node">Build a driver-based model — link to unit economics, headcount, or pricing assumptions. Highest rigor, revisit monthly.</div>
+          </div>
+          <div class="tree-branch">
+            <div class="tree-branch-label">Unpredictable / one-off</div>
+            <div class="tree-node">Use scenario ranges (low/base/high) instead of a single point forecast. Flag explicitly as high-uncertainty in the narrative.</div>
+          </div>
+        </div>
+      </div>
+      <div class="tree-branch">
+        <div class="tree-branch-label">No — immaterial</div>
+        <div class="tree-node">Use a simple trend/run-rate extrapolation (e.g. 3-month average). Don't over-invest modeling time here — revisit quarterly, not monthly.</div>
+      </div>
+    </div>
+  `;
+
+  // ---------- COMPARISON TABLE ----------
+  const compareData = [
+    {tool:'Claude (Opus/Sonnet)', best:'Variance narrative & exec summary writing', strength:'Nuanced, cause-oriented language; handles ambiguity well', cost:'Subscription / API', bestFor:true},
+    {tool:'ChatGPT (GPT-5 class)', best:'Data reconciliation & spreadsheet formula work', strength:'Strong code execution for large file diffing', cost:'Subscription / API', bestFor:false},
+    {tool:'Excel/Sheets Copilot or Gemini', best:'In-model formula assistance', strength:'Works inside the model finance already trusts', cost:'Included in M365/Workspace', bestFor:false},
+    {tool:'Datarails / Vena / Pigment', best:'Automated actuals ingestion + rolling forecast', strength:'Native ERP connectors, purpose-built for FP&A', cost:'Enterprise license', bestFor:false},
+    {tool:'Gamma / SlidesGPT', best:'Fast board deck generation from outline', strength:'Speed — outline to deck in minutes', cost:'Freemium / subscription', bestFor:false}
+  ];
+  const ct = document.getElementById('compareTable');
+  ct.innerHTML = `<tr><th>Tool</th><th>Best For</th><th>Key Strength</th><th>Typical Cost</th></tr>` +
+    compareData.map(r=>`<tr><td class="${r.bestFor?'best':''}">${r.tool}</td><td>${r.best}</td><td>${r.strength}</td><td>${r.cost}</td></tr>`).join('');
+
+  // ---------- SUMMARY SECTIONS ----------
+  const stack = ['Claude (Opus/Sonnet) — narrative & analysis','ChatGPT (GPT-5, Code Interpreter) — data reconciliation','Excel/Sheets + Copilot or Gemini — model home base','Datarails or Vena — ERP-connected automation (scaling teams)','Gamma or SlidesGPT — board deck generation'];
+  document.getElementById('stackList').innerHTML = stack.map(s=>`<div class="pill">${s}</div>`).join('');
+
+  const learn = ['CFI — FP&A Modeling & Forecasting courses','Wall Street Prep — Financial Planning & Analysis track','Coursera: "Financial Planning & Forecasting" (various universities)','FP&A Trends Group research library'];
+  document.getElementById('learnList').innerHTML = `<ul style="padding-left:18px; margin:0; font-size:.9rem;">${learn.map(l=>`<li style="margin-bottom:8px;">${l}</li>`).join('')}</ul>`;
+
+  const comms = ['r/FPandA (Reddit)','FP&A Trends Group (LinkedIn + community)','Corporate Finance Institute community forum','Datarails / Vena user communities'];
+  document.getElementById('commList').innerHTML = comms.map(c=>`<div class="pill">${c}</div>`).join('');
+
+  const kws = ['rolling forecast template','variance analysis FP&A','driver-based forecasting','budget vs actual automation','AI for financial planning','FP&A month-end close checklist'];
+  document.getElementById('kwList').innerHTML = kws.map(k=>`<div class="pill">${k}</div>`).join('');
+
+  const extraPrompts = [
+    'Summarize the top 5 risks to next quarter\'s forecast based on this month\'s variance patterns, ranked by potential dollar impact.',
+    'Compare this month\'s variance drivers to the same month last year — is this a seasonal pattern or a new trend?'
+  ];
+  document.getElementById('promptList').innerHTML = extraPrompts.map(p=>`<div class="prompt-box" style="font-size:.78rem;">${p}<button class="copy-btn" data-copy="${encodeURIComponent(p)}">Copy</button></div>`).join('');
+
+  const future = ['Auto-reconciliation via ERP API + AI agent, removing manual export/import entirely','Real-time variance alerts when a department crosses its materiality threshold mid-month','AI-drafted first-pass narrative generated automatically the morning after close','Continuous rolling forecast updates instead of a discrete monthly cycle'];
+  document.getElementById('futureList').innerHTML = future.map(f=>`<li style="margin-bottom:8px;">${f}</li>`).join('');
+
+  document.querySelectorAll('#promptList .copy-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      navigator.clipboard?.writeText(decodeURIComponent(btn.dataset.copy));
+      const old = btn.textContent; btn.textContent='Copied';
+      setTimeout(()=>btn.textContent=old, 1400);
+    });
+  });
+
+  // ---------- CONTROLS ----------
+  document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(confirm('Reset all progress, notes, and bookmarks?')){
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
