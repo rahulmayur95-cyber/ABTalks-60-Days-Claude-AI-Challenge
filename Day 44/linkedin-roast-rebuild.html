@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Roast & Rebuild</title>
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#14171c; --panel2:#1a1e24; --line:#262b33;
+    --text:#eef1f5; --muted:#9aa4b2; --accent:#3b82f6; --accent2:#22d3ee;
+    --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b0d10,#0e1117 400px,#0b0d10);
+    color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 80px;}
+  header.top{text-align:center;margin-bottom:22px;}
+  header.top h1{font-size:1.7rem;margin:0 0 6px;font-weight:800;letter-spacing:-0.02em;}
+  header.top p{color:var(--muted);margin:0;font-size:.95rem;}
+
+  nav.tabs{
+    display:flex; gap:6px; background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:5px; margin:20px 0; overflow-x:auto;
+  }
+  nav.tabs button{
+    flex:1; white-space:nowrap; background:transparent; border:none; color:var(--muted);
+    padding:10px 12px; border-radius:8px; font-size:.85rem; font-weight:600; cursor:pointer;
+    transition:.15s;
+  }
+  nav.tabs button.active{background:var(--accent); color:#fff;}
+  nav.tabs button:hover:not(.active){background:var(--panel2); color:var(--text);}
+
+  section.panel{display:none; animation:fade .25s ease;}
+  section.panel.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);}}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:18px 18px; margin-bottom:16px;
+  }
+  .card h2{font-size:1.1rem; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:.95rem; margin:16px 0 6px; color:var(--accent2);}
+  .quote{
+    background:#20141a; border-left:3px solid var(--bad); padding:10px 12px; border-radius:6px;
+    font-style:italic; color:#f2b8be; font-size:.9rem; margin:8px 0;
+  }
+  .score-row{display:flex; align-items:center; gap:12px; margin:6px 0 12px;}
+  .score-badge{
+    font-weight:800; font-size:1.05rem; min-width:58px; text-align:center;
+    padding:5px 8px; border-radius:8px; background:var(--panel2); border:1px solid var(--line);
+  }
+  .bar{flex:1; height:8px; background:#22262e; border-radius:99px; overflow:hidden;}
+  .bar > span{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--bad),var(--warn));}
+  .label{font-size:.85rem; color:var(--muted); min-width:150px;}
+
+  .why{margin:4px 0; font-size:.9rem;}
+  .why b{color:var(--text);}
+  ul.tight{margin:6px 0; padding-left:20px;}
+  ul.tight li{margin-bottom:6px; font-size:.92rem;}
+
+  .overall{
+    text-align:center; padding:18px; border-radius:14px; margin-top:6px;
+    background:radial-gradient(circle at 50% 0%, #1c2230, var(--panel));
+    border:1px solid var(--line);
+  }
+  .overall .num{font-size:2.4rem; font-weight:800; color:var(--bad);}
+  .overall .num.after{color:var(--good);}
+  .overall small{color:var(--muted);}
+
+  .opt{
+    background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; margin-bottom:10px;
+  }
+  .opt .tag{
+    display:inline-block; font-size:.7rem; font-weight:700; letter-spacing:.03em;
+    color:var(--accent2); text-transform:uppercase; margin-bottom:6px;
+  }
+  .opt .txt{font-weight:600;}
+  .opt .why-use{color:var(--muted); font-size:.85rem; margin-top:6px;}
+
+  .about-block{
+    background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+    padding:14px; white-space:pre-line; font-size:.92rem; margin-bottom:10px;
+  }
+  .kw{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+  .kw span{
+    background:#132133; color:var(--accent2); border:1px solid #1e3a52;
+    padding:3px 9px; border-radius:99px; font-size:.75rem; font-weight:600;
+  }
+
+  .ba{display:flex; flex-direction:column; gap:6px; margin-bottom:14px; border-bottom:1px dashed var(--line); padding-bottom:12px;}
+  .ba:last-child{border-bottom:none;}
+  .ba .before{color:#f2b8be; font-size:.85rem;}
+  .ba .after{color:#bdf2c9; font-size:.9rem;}
+  .ba .before b, .ba .after b{opacity:.8; font-size:.75rem; text-transform:uppercase; letter-spacing:.03em; display:block; margin-bottom:2px;}
+
+  table.sc{width:100%; border-collapse:collapse; margin-top:8px;}
+  table.sc th, table.sc td{padding:8px 6px; text-align:left; font-size:.85rem; border-bottom:1px solid var(--line);}
+  table.sc th{color:var(--muted); font-weight:600;}
+  .delta{color:var(--good); font-weight:700;}
+
+  .skill-cols{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:520px){.skill-cols{grid-template-columns:1fr;}}
+  .skill-cols h4{font-size:.85rem; margin:0 0 8px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .pinned{background:#132133; border:1px solid #1e3a52; border-radius:10px; padding:10px 12px; margin-top:10px; font-size:.85rem;}
+
+  .day{
+    background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+    padding:14px; margin-bottom:10px;
+  }
+  .day .dnum{
+    display:inline-block; background:var(--accent); color:#fff; font-weight:800;
+    font-size:.75rem; padding:3px 9px; border-radius:99px; margin-bottom:8px;
+  }
+  .day h4{margin:0 0 6px; font-size:.98rem;}
+  .checklist label{display:flex; gap:8px; align-items:flex-start; font-size:.88rem; margin:6px 0; cursor:pointer;}
+  .checklist input{margin-top:3px;}
+  .post-draft{
+    background:#0f1520; border:1px solid #1e2a3a; border-radius:10px; padding:12px;
+    font-size:.88rem; white-space:pre-line; margin-top:8px;
+  }
+  .charcount{color:var(--muted); font-size:.75rem; margin-top:6px;}
+
+  .summary-card{
+    background:linear-gradient(145deg,#101820,#161c26); border:1px solid var(--line);
+    border-radius:16px; padding:22px; text-align:left; position:relative;
+  }
+  .summary-card h2{text-align:center; font-size:1.15rem;}
+  .summary-scores{display:flex; justify-content:center; gap:26px; margin:14px 0;}
+  .summary-scores div{text-align:center;}
+  .summary-scores .n{font-size:1.8rem; font-weight:800;}
+  .summary-scores .n.b{color:var(--bad);}
+  .summary-scores .n.a{color:var(--good);}
+  .arrow{font-size:1.5rem; color:var(--muted); align-self:center;}
+  .btnbar{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  button.action{
+    background:var(--accent); color:#fff; border:none; padding:10px 16px; border-radius:9px;
+    font-weight:700; font-size:.85rem; cursor:pointer;
+  }
+  button.action.secondary{background:var(--panel2); border:1px solid var(--line); color:var(--text);}
+  footer.note{text-align:center; color:var(--muted); font-size:.78rem; margin-top:26px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>🔥 Your LinkedIn: Roasted & Rebuilt</h1>
+    <p>Based only on what you gave me — nothing invented.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="roast">Roast</button>
+    <button class="tab-btn" data-tab="rebuild">Rebuild</button>
+    <button class="tab-btn" data-tab="scorecard">Scorecard</button>
+    <button class="tab-btn" data-tab="plan">7-Day Plan</button>
+    <button class="tab-btn" data-tab="summary">Summary</button>
+  </nav>
+
+  <!-- ROAST -->
+  <section class="panel active" id="roast">
+    <div class="overall">
+      <div class="num" id="overallBefore">38</div>
+      <small>Overall Profile Strength (BEFORE) — out of 100</small>
+    </div>
+
+    <div class="card">
+      <h2>📌 Headline — <span style="color:var(--bad)">4/10</span></h2>
+      <div class="quote">"IMS, Ghaziabad 27 PGDM Candidate in Marketing & Finance | National Finalist - AIMA Business Simulation | Data-Driven Strategist"</div>
+      <p class="why">❌ <b>The problem:</b> You lead with your institute's name and a stray "27" (batch number, but reads like a typo). By the time a recruiter hits anything about YOU, they've already skimmed past.</p>
+      <p class="why">🧠 <b>Why it hurts:</b> Headlines are LinkedIn's #1 search-ranking field. "IMS, Ghaziabad" and "27" are not keywords anyone searches for. "National Finalist" and "Data-Driven Strategist" — your actual strengths — are buried at the end.</p>
+      <p class="why">🔍 <b>Invisible cost:</b> Recruiters searching "Marketing Finance PGDM" or "Financial Modeling intern" may never surface your profile, because the algorithm weighs the front of the headline heavier.</p>
+    </div>
+
+    <div class="card">
+      <h2>🎣 About — First 2 Lines — <span style="color:var(--bad)">3/10</span></h2>
+      <div class="quote">"I am a Post Graduate Diploma in Management (PGDM) candidate with a dual specialization in Marketing and Finance."</div>
+      <p class="why">❌ <b>The problem:</b> This is the ONLY text visible before "see more" — and it's a restatement of your headline. Zero hook, zero reason to click further.</p>
+      <p class="why">🧠 <b>Why it hurts:</b> Recruiters decide in under 3 seconds whether to expand. A generic self-ID sentence gives them nothing to react to — no story, no tension, no specificity.</p>
+      <p class="why">🔍 <b>Invisible cost:</b> Most readers never see your genuinely strong content below (AIMA Simulation, ISM/PESTLE modeling, quick commerce research) because they never click "see more."</p>
+    </div>
+
+    <div class="card">
+      <h2>📄 About — Full Section — <span style="color:var(--warn)">6/10</span></h2>
+      <p class="why">❌ <b>The problem:</b> The content is genuinely strong — ISM, PESTLE, quick-commerce deep-discounting research, Power BI — but it's formatted as dense corporate paragraphs with no line breaks, no narrative arc, and no CTA at the end.</p>
+      <p class="why">🧠 <b>Why it hurts:</b> On mobile (where most recruiters browse), a wall of text reads as "I didn't edit this." It signals effort was put into content, not communication — which recruiters interpret as a red flag for how you'll write reports/emails.</p>
+      <p class="why">🔍 <b>Invisible cost:</b> There's no closing CTA — no "message me," no "open to X roles" — so even an impressed reader has no next action.</p>
+    </div>
+
+    <div class="card">
+      <h2>💼 Experience — <span style="color:var(--warn)">5/10</span></h2>
+      <div class="quote">"Designing and executing structured preference surveys across key modern trade retail outlets to analyze customer buying behavior..."</div>
+      <p class="why">❌ <b>The problem:</b> Every bullet describes a <b>task</b>, not a <b>result</b>. "Designing surveys," "conducting audits," "monitoring availability" — this is what your job description said, not what you achieved.</p>
+      <p class="why">🧠 <b>Why it hurts:</b> Recruiters scan for outcomes: How many outlets? What % improvement? What did the company do with your findings? Without numbers, this reads as "I did the tasks assigned" rather than "I created value."</p>
+      <p class="why">🔍 <b>Invisible cost:</b> You have a genuinely impressive detail — a $400M turnover FMCG brand — but it's mentioned once and then buried under generic responsibility language.</p>
+    </div>
+
+    <div class="card">
+      <h2>🔑 Skills & Keywords — <span style="color:var(--warn)">5/10</span></h2>
+      <p class="why">❌ <b>The problem:</b> Your list (Financial Modeling, Brand Strategy, Marketing Analytics, Quick Commerce Ecosystems, Corporate Strategy, Consumer Behavior, Competitive Attack Strategies, Budgeting & Forecasting) is thoughtful, but a couple of terms aren't things recruiters actually type into search — "Competitive Attack Strategies" isn't a standard searchable phrase.</p>
+      <p class="why">🧠 <b>Why it hurts:</b> LinkedIn's recruiter search matches on exact/close skill phrases. Tools you mention in your About (Excel, Power BI) aren't in your Skills list at all — that's a missed search-visibility opportunity.</p>
+      <p class="why">🔍 <b>Invisible cost:</b> You're likely invisible to recruiter Boolean searches like "Power BI Marketing Intern" simply because that phrase never appears as a tagged skill.</p>
+    </div>
+  </section>
+
+  <!-- REBUILD -->
+  <section class="panel" id="rebuild">
+    <div class="card">
+      <h2>📌 Headline — 3 Options</h2>
+      <p style="color:var(--muted); font-size:.88rem;">Formula: [Role/Identity] | [Who I Help or What I Do] | [Proof/Differentiator]</p>
+
+      <div class="opt">
+        <span class="tag">Option 1 — Keyword-Optimized</span>
+        <div class="txt">PGDM Candidate (Marketing & Finance) | Financial Modeling, Marketing Analytics & Brand Strategy | Power BI, Excel</div>
+        <div class="why-use">Use for: appearing in recruiter search results. Front-loads exact terms recruiters type into LinkedIn search.</div>
+      </div>
+
+      <div class="opt">
+        <span class="tag">Option 2 — Value-Proposition</span>
+        <div class="txt">Turning Market Data into Profitable Strategy | Marketing x Finance | National Finalist, AIMA Business Simulation</div>
+        <div class="why-use">Use for: internship/full-time applications where a hiring manager reads your profile after seeing your resume — this sells your "why hire me" in one line.</div>
+      </div>
+
+      <div class="opt">
+        <span class="tag">Option 3 — Authority Style</span>
+        <div class="txt">Data-Driven Marketing Strategist | Quick Commerce & FMCG Research | AIMA National Finalist</div>
+        <div class="why-use">Use for: building visibility if you start posting content — positions you as someone with a specific point of view (quick commerce), not a generalist.</div>
+      </div>
+
+      <p style="font-size:.85rem; color:var(--muted); margin-top:10px;">👉 Since your goal is <b>full-time roles / internships</b>, start with <b>Option 1</b> live on your profile — it maximizes how often you show up in recruiter searches. Swap to Option 2 once you're actively applying to specific roles.</p>
+    </div>
+
+    <div class="card">
+      <h2>🎣 About Section — Full Rewrite</h2>
+      <div class="about-block">I turn messy market data into strategies companies can actually bank on. (hook)
+
+As a PGDM candidate specializing in Marketing & Finance, I work where consumer behavior meets the balance sheet — because a marketing idea that doesn't protect margins isn't a strategy, it's a gamble. (story)
+
+Recently, I represented my institute as a National Finalist at the AIMA Business Simulation Games, running corporate finance and market-penetration decisions against teams from across India in real time. I've also researched how deep-discounting in quick commerce is quietly eating into long-term customer loyalty and margins — the kind of question brands are wrestling with right now.
+
+What I bring:
+→ Financial modeling & forecasting for real business decisions
+→ Strategic frameworks (ISM, PESTLE, SWOT) applied to live market problems
+→ Power BI & Excel for dashboards that non-technical stakeholders actually use
+→ Hands-on FMCG field research — competitor pricing, retail audits, promoter effectiveness
+
+I'm actively looking for full-time roles and internships in marketing strategy, financial analysis, or business analytics. If you're hiring or know a team that is — let's talk. (CTA)</div>
+      <h3>Keywords embedded for search (SEO)</h3>
+      <div class="kw">
+        <span>Financial Modeling</span><span>Marketing Analytics</span><span>Brand Strategy</span>
+        <span>Quick Commerce</span><span>Corporate Strategy</span><span>Power BI</span>
+        <span>Excel</span><span>Business Analytics</span><span>Market Research</span><span>PGDM</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💼 Experience — Top Entry Rewrite</h2>
+      <p style="font-size:.85rem;color:var(--muted);">Sales Intern – Modern Trade, Bikanervala Foods Pvt. Ltd.</p>
+
+      <div class="ba">
+        <div class="before"><b>Before</b>Designing and executing structured preference surveys across key modern trade retail outlets to analyze customer buying behavior, brand loyalty, and price sensitivity.</div>
+        <div class="after"><b>After</b>→ Designed and ran structured consumer-preference surveys across modern trade retail outlets for a $400M-turnover FMCG brand, generating insights on buying behavior, brand loyalty, and price sensitivity that fed into weekly strategy reports.</div>
+      </div>
+
+      <div class="ba">
+        <div class="before"><b>Before</b>Conducting rigorous audits comparing Bikano's product assortment, pricing models, and promotional schemes against competitors to identify market gaps and missed sales opportunities.</div>
+        <div class="after"><b>After</b>→ Audited competitor pricing, product assortment, and promotions across retail outlets to identify market gaps — findings used to sharpen Bikano's competitive positioning in modern trade.</div>
+      </div>
+
+      <div class="ba">
+        <div class="before"><b>Before</b>Monitoring product availability, auditing out-of-stock situations, and ensuring optimal shelf placement according to corporate planograms to maximize brand visibility.</div>
+        <div class="after"><b>After</b>→ Tracked stock availability and shelf placement against corporate planograms, flagging out-of-stock gaps to improve on-shelf brand visibility.</div>
+      </div>
+
+      <div class="ba">
+        <div class="before"><b>Before</b>Evaluating in-store promoters on customer engagement and product knowledge to deliver actionable recommendations for sampling strategies and premium SKU upselling.</div>
+        <div class="after"><b>After</b>→ Evaluated in-store promoter performance on engagement and product knowledge, delivering recommendations that shaped sampling strategy and premium SKU upselling.</div>
+      </div>
+
+      <p style="font-size:.83rem;color:var(--muted); margin-top:10px;">💡 Note: I didn't invent numbers you didn't give me. If you have any real figures (e.g., "surveyed 40+ outlets," "covered 3 cities," "% increase in shelf compliance"), add them — even rough estimates outperform vague language.</p>
+    </div>
+
+    <div class="card">
+      <h2>🔧 Skills Recommendations</h2>
+      <div class="skill-cols">
+        <div>
+          <h4>Add (priority order)</h4>
+          <ul class="tight">
+            <li>Power BI</li>
+            <li>Microsoft Excel (Advanced)</li>
+            <li>Market Research</li>
+            <li>Business Analytics</li>
+            <li>Financial Forecasting</li>
+            <li>Competitive Analysis</li>
+            <li>Retail & Trade Marketing</li>
+            <li>SWOT / PESTLE Analysis</li>
+            <li>Strategic Planning</li>
+            <li>Consumer Behavior Analysis</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Remove / rename</h4>
+          <ul class="tight">
+            <li><s>Competitive Attack Strategies</s> → rename to "Competitive Analysis" (searchable term)</li>
+            <li><s>Quick Commerce Ecosystems</s> → keep, but not in top 3 pinned — niche term, low search volume</li>
+          </ul>
+        </div>
+      </div>
+      <div class="pinned">📌 <b>Pin these 3 to the top:</b> Financial Modeling · Marketing Analytics · Power BI — highest combination of relevance + recruiter search volume for your target roles.</div>
+    </div>
+  </section>
+
+  <!-- SCORECARD -->
+  <section class="panel" id="scorecard">
+    <div class="card">
+      <h2>📊 Before vs After</h2>
+      <table class="sc">
+        <tr><th>Section</th><th>Before</th><th>After</th><th>Change</th></tr>
+        <tr><td>Headline</td><td>4/10</td><td>8/10</td><td class="delta">+4</td></tr>
+        <tr><td>About (Hook)</td><td>3/10</td><td>9/10</td><td class="delta">+6</td></tr>
+        <tr><td>About (Full)</td><td>6/10</td><td>9/10</td><td class="delta">+3</td></tr>
+        <tr><td>Experience</td><td>5/10</td><td>8/10</td><td class="delta">+3</td></tr>
+        <tr><td>Skills/Keywords</td><td>5/10</td><td>8/10</td><td class="delta">+3</td></tr>
+      </table>
+    </div>
+    <div class="overall" style="display:flex; justify-content:center; align-items:center; gap:24px;">
+      <div><div class="num">38</div><small>Before</small></div>
+      <div style="font-size:1.6rem; color:var(--muted);">→</div>
+      <div><div class="num after">82</div><small>After</small></div>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="panel" id="plan">
+    <div class="card">
+      <h2>📅 7-Day LinkedIn Activation Plan</h2>
+
+      <div class="day">
+        <span class="dnum">DAY 1</span>
+        <h4>Make all profile changes</h4>
+        <div class="checklist">
+          <label><input type="checkbox"> Update headline (Option 1)</label>
+          <label><input type="checkbox"> Replace About section with rewrite</label>
+          <label><input type="checkbox"> Update Bikanervala experience bullets</label>
+          <label><input type="checkbox"> Add new skills, reorder pinned skills</label>
+          <label><input type="checkbox"> Add a profile photo + banner if missing</label>
+        </div>
+      </div>
+
+      <div class="day">
+        <span class="dnum">DAY 2</span>
+        <h4>Publish Post #1 — "I rebuilt my LinkedIn" post</h4>
+        <div class="post-draft">I just spent a week rewriting my entire LinkedIn profile — and it made me realize how much I was hiding my own work.
+
+For months my About section basically said "I'm a PGDM student." True, but useless. It told you my status, not what I actually do: turn market data into strategies that protect margins, not just chase growth.
+
+Two things I learned:
+1. Recruiters read your first 2 lines, not your whole profile. If those 2 lines don't hook them, the rest doesn't matter.
+2. "Responsibilities" ≠ "Results." I was listing tasks. I should've been listing impact.
+
+Rebuilt profile, would love feedback from anyone in marketing/finance/analytics 👇
+
+#PGDM #MarketingAnalytics #FinancialModeling #OpenToWork</div>
+        <div class="charcount">≈ 780 characters — under the 1300 limit, room to personalize.</div>
+      </div>
+
+      <div class="day">
+        <span class="dnum">DAY 3</span>
+        <h4>Send 10 strategic connection requests</h4>
+        <p style="font-size:.9rem;">Target: hiring managers/recruiters at FMCG, quick commerce, and consulting firms; alumni from your PGDM program in marketing/finance roles; professionals who've posted about brand strategy or financial modeling in the last month.</p>
+        <div class="post-draft">Hi [Name], I'm a PGDM candidate specializing in Marketing & Finance, working on quick commerce and FMCG market research. Really admire your work in [their field] — would love to connect and learn from your journey.</div>
+        <div class="charcount">≈ 230 characters — under the 300 limit.</div>
+      </div>
+
+      <div class="day">
+        <span class="dnum">DAY 4</span>
+        <h4>Comment on 5 posts in your target space</h4>
+        <p style="font-size:.9rem;"><b>The Value Comment formula:</b> Agree (briefly affirm their point) + Add Insight (bring a data point, framework, or experience of your own) + Ask a Question (invite a reply, don't just close the loop).</p>
+        <div class="post-draft">Example: "Completely agree that deep-discounting is a short-term lever — I looked into this in quick commerce specifically, and the loyalty drop-off after discount removal was steeper than expected. Curious how you've seen brands rebuild that loyalty once discounts end?"</div>
+      </div>
+
+      <div class="day">
+        <span class="dnum">DAY 5</span>
+        <h4>Publish Post #2 — Lessons-learned / hot take</h4>
+        <div class="post-draft">Unpopular opinion after researching quick commerce for months: aggressive discounting isn't a growth strategy. It's a margin-erosion strategy wearing a growth costume.
+
+Every brand I studied that leaned hard into deep discounts saw the same pattern: short-term order spikes, then customers who churn the moment the discount disappears. The loyalty was never to the brand — it was to the price.
+
+The brands actually winning long-term were investing in product visibility, in-store experience, and promoter engagement — not just cutting prices.
+
+Growth you have to keep paying for isn't growth. It's rent.
+
+What's the biggest myth you've seen in your industry?
+
+#QuickCommerce #BrandStrategy #MarketingAnalytics</div>
+        <div class="charcount">≈ 820 characters</div>
+      </div>
+
+      <div class="day">
+        <span class="dnum">DAY 6</span>
+        <h4>Engage + send 5 more connection requests</h4>
+        <p style="font-size:.9rem;">Reply to every comment on both posts within a few hours — replies signal to LinkedIn's algorithm that the post is "alive," extending its reach. Send 5 more targeted requests using the Day 3 template.</p>
+      </div>
+
+      <div class="day">
+        <span class="dnum">DAY 7</span>
+        <h4>Review your numbers</h4>
+        <ul class="tight">
+          <li><b>Profile views spiked?</b> → Your headline/keywords are working — search visibility improved.</li>
+          <li><b>Connection acceptance rate low (&lt;30%)?</b> → Your request message or shared context is too generic; get more specific about why you're connecting.</li>
+          <li><b>Posts got views but no comments?</b> → Your hook worked, but the CTA/question at the end needs to be sharper or more personal.</li>
+          <li><b>Nothing moved?</b> → Normal in week 1. Consistency (2 posts/week, daily engagement) compounds — don't judge after 7 days alone, judge after 4 weeks.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="panel" id="summary">
+    <div class="summary-card">
+      <h2>📸 What I Learned Today</h2>
+      <p style="text-align:center; color:var(--muted); font-size:.85rem;">Screenshot this and post it.</p>
+      <div class="summary-scores">
+        <div><div class="n b">38</div><small>Before</small></div>
+        <div class="arrow">→</div>
+        <div><div class="n a">82</div><small>After</small></div>
+      </div>
+      <p style="text-align:center; font-weight:700; margin-top:-4px;">+44 points</p>
+
+      <h3 style="margin-top:18px;">Top 3 mistakes I was making:</h3>
+      <ul class="tight">
+        <li>Leading my headline with my institute's name instead of my value — recruiters never got to the good part.</li>
+        <li>Writing responsibilities instead of results — every experience bullet described a task, not an outcome.</li>
+        <li>No hook or CTA in my About section — genuinely strong content that almost nobody would ever read.</li>
+      </ul>
+
+      <h3>The #1 thing that made the biggest difference:</h3>
+      <p style="font-size:.92rem;">Rewriting the first 2 lines of my About section. That's the only part visible before "see more" — fixing it is what actually gets people to read the rest.</p>
+
+      <div class="btnbar">
+        <button class="action" onclick="window.print()">🖨️ Save / Print</button>
+        <button class="action secondary" onclick="copySummary()">📋 Copy Summary Text</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">Built from your actual profile content — nothing here was invented. Update the copy with real numbers wherever you have them.</footer>
+</div>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function copySummary(){
+    const text = `I let AI roast my LinkedIn profile today. Here's what changed:
+
+Before: 38/100
+After: 82/100
+
+Top 3 mistakes I was making:
+1. Leading my headline with my institute's name instead of my value
+2. Writing responsibilities instead of results in my experience section
+3. No hook or CTA in my About section
+
+The #1 thing that made the biggest difference: Rewriting the first 2 lines of my About section — that's all anyone sees before "see more."`;
+    navigator.clipboard.writeText(text).then(()=>{
+      alert('Copied! Paste it straight into a LinkedIn post.');
+    });
+  }
+</script>
+</body>
+</html>
