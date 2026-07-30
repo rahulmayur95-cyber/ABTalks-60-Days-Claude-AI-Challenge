@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>60 Days to v1.0.0 — The StockLens Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0e1a30; --navy2:#13233f; --teal:#0e7c7b; --teal-l:#1fb3a9;
+    --amber:#d9a441; --bg:#f4f6f8; --card:#ffffff; --line:#e2e6eb;
+    --ink:#101720; --muted:#5c6a7a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Inter',sans-serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:0 24px 100px;}
+  header{
+    background:linear-gradient(160deg,var(--navy) 0%, var(--navy2) 60%, #0c2e2d 100%);
+    color:#fff; padding:80px 24px 100px; position:relative; overflow:hidden;
+  }
+  header::after{
+    content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px;
+    background:radial-gradient(circle, rgba(31,179,169,0.25), transparent 70%);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--teal-l); font-weight:600;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(34px,5.2vw,58px); line-height:1.06; margin:18px 0 20px;
+    max-width:760px; letter-spacing:-0.01em;
+  }
+  header p{max-width:600px; color:#c7d3e0; font-size:17px;}
+  .ticker{
+    display:inline-flex; gap:10px; align-items:baseline; margin-top:28px;
+    font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--teal-l);
+    border:1px solid rgba(255,255,255,0.16); padding:8px 16px; border-radius:999px;
+  }
+  .ticker b{color:#fff; font-size:16px;}
+
+  section{margin-top:64px;}
+  .section-head{display:flex; align-items:baseline; gap:14px; margin-bottom:36px;}
+  .section-num{font-family:'JetBrains Mono',monospace; color:var(--teal); font-weight:600; font-size:14px;}
+  h2{font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:600;}
+
+  /* --- The signature element: an ascending stock-chart spine --- */
+  .chart-spine{position:relative; padding-left:36px;}
+  .chart-spine svg{position:absolute; left:0; top:0; height:100%; width:36px;}
+  .phase{
+    position:relative; padding:0 0 56px 28px; border-left:2px solid var(--line);
+  }
+  .phase:last-child{padding-bottom:0; border-left:2px solid transparent;}
+  .phase::before{
+    content:""; position:absolute; left:-7px; top:2px; width:12px; height:12px;
+    border-radius:50%; background:var(--card); border:3px solid var(--teal);
+  }
+  .phase.peak::before{
+    background:var(--amber); border-color:var(--amber);
+    box-shadow:0 0 0 5px rgba(217,164,65,0.18);
+  }
+  .phase-range{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+    letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px;
+  }
+  .phase h3{font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600; margin-bottom:8px;}
+  .phase p{color:var(--muted); font-size:15px; max-width:600px;}
+  .tag-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .tag{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--navy2);
+    background:#eef2f5; border:1px solid var(--line); padding:4px 10px; border-radius:6px;
+  }
+  .phase.peak .tag{background:#fdf3e0; border-color:#f1dcae; color:#8a611c;}
+
+  .capstone-card{
+    background:linear-gradient(135deg,var(--navy2),#0c2e2d);
+    color:#fff; border-radius:16px; padding:38px 36px; margin-top:8px;
+    box-shadow:0 20px 45px -20px rgba(14,30,50,0.5);
+  }
+  .capstone-card .eyebrow{color:var(--amber);}
+  .capstone-card h3{font-family:'Space Grotesk',sans-serif; font-size:24px; margin:12px 0 14px;}
+  .capstone-card p{color:#cdd8e3; font-size:15px; max-width:640px;}
+  .stat-row{display:flex; gap:36px; margin-top:26px; flex-wrap:wrap;}
+  .stat b{display:block; font-family:'Space Grotesk',sans-serif; font-size:28px; color:var(--teal-l);}
+  .stat span{font-size:12.5px; color:#9fb0c2; font-family:'JetBrains Mono',monospace;}
+
+  footer{
+    margin-top:80px; padding-top:28px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    font-size:13px; color:var(--muted); font-family:'JetBrains Mono',monospace;
+  }
+  a{color:var(--teal);}
+
+  @media(max-width:640px){
+    header{padding:56px 20px 72px;}
+    .stat-row{gap:24px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap" style="padding:0;">
+    <div class="eyebrow">AB Talks · 60-Day Claude AI Challenge</div>
+    <h1>Sixty days of building. One line, trending up, ending in a launch.</h1>
+    <p>How six weeks of AI fundamentals, prompting, reasoning, and increasingly ambitious builds culminated in shipping StockLens — a live, secured, production application — in a 10-day capstone sprint.</p>
+    <div class="ticker">STOCKLENS <b>v1.0.0</b> · SHIPPED</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">// 01</span>
+      <h2>The climb — 60 days of compounding skill</h2>
+    </div>
+
+    <div class="chart-spine">
+      <div class="phase">
+        <div class="phase-range">Days 1–15</div>
+        <h3>AI Foundations</h3>
+        <p>Core mental models for working with an AI system — what it can and can't reliably do, how context and instructions actually shape output.</p>
+        <div class="tag-row"><span class="tag">llm-basics</span><span class="tag">capabilities</span><span class="tag">limitations</span></div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-range">Days 16–30</div>
+        <h3>Effective Prompting &amp; Reasoning</h3>
+        <p>Moving from asking questions to directing structured reasoning — decomposing problems, iterating on instructions, and getting reliable output on the first pass.</p>
+        <div class="tag-row"><span class="tag">prompt-engineering</span><span class="tag">chain-of-thought</span><span class="tag">iteration</span></div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-range">Days 31–45</div>
+        <h3>Research Workflows &amp; Automation</h3>
+        <p>Chaining AI into real workflows — research, synthesis, and automation — plus the first taste of product thinking: not just "can it," but "should it, and for whom."</p>
+        <div class="tag-row"><span class="tag">workflows</span><span class="tag">automation</span><span class="tag">product-thinking</span></div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-range">Days 46–59</div>
+        <h3>Multimodal, Knowledge Systems &amp; Agents</h3>
+        <p>Progressively more sophisticated builds — multimodal AI, structured knowledge systems, and early autonomous agent and multi-agent collaboration patterns.</p>
+        <div class="tag-row"><span class="tag">multimodal</span><span class="tag">knowledge-systems</span><span class="tag">agentic-architecture</span></div>
+      </div>
+
+      <div class="phase peak">
+        <div class="phase-range">Day 60 — The 10-Day Capstone</div>
+        <h3>StockLens: Requirements → Production</h3>
+        <p>Every prior skill compressed into one real build: a PRD, architecture and schema design, iterative implementation, a genuine production bug diagnosed from live server logs, a dedicated security-hardening pass, and a public v1.0.0 launch.</p>
+        <div class="tag-row"><span class="tag">full-sdlc</span><span class="tag">flask-+-sqlite</span><span class="tag">finnhub-api</span><span class="tag">csrf-+-rate-limiting</span><span class="tag">deployed-on-render</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">// 02</span>
+      <h2>What the capstone actually proved</h2>
+    </div>
+
+    <div class="capstone-card">
+      <div class="eyebrow">Capstone Result</div>
+      <h3>A live, secured, documented product — not a tutorial exercise</h3>
+      <p>StockLens is a full-stack stock watchlist and analysis dashboard: authentication, live market data, news, price-target alerts, a sortable comparison view, CSRF protection, login rate limiting, and a professional design system — built solo across 10 days and publicly deployed.</p>
+      <div class="stat-row">
+        <div class="stat"><b>10</b><span>DAYS, IDEA → V1.0.0</span></div>
+        <div class="stat"><b>2</b><span>PRODUCTION BUGS DIAGNOSED &amp; FIXED</span></div>
+        <div class="stat"><b>0</b><span>PAID SERVICES USED</span></div>
+        <div class="stat"><b>100%</b><span>FREE-TIER STACK</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>StockLens · Built with Claude</span>
+    <span>AB Talks 60-Day Claude AI Challenge · Capstone Sprint</span>
+  </footer>
+
+</div>
+</body>
+</html>
